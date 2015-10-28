@@ -16,10 +16,15 @@ int parsing(char* name);
 
 
 %%
-
-IF|ELSE|WHILE|DO|FOR|RETURN	return *yytext;
-INT  return INT;
-STRING|EXTERN			return *yytext;
+IF|if		return IF;
+ELSE|else	return ELSE;
+WHILE|while     return WHILE;
+DO|do           return DO;
+FOR|for		return FOR;
+RETURN|return   return RETURN;
+INT|int  	return INT;
+STRING|string   return STRING;
+EXTERN|extern   return EXTERN;
 
 [A-Za-z\_][A-Za-z\_0-9]*	{
 if(yyleng>31)
@@ -49,12 +54,27 @@ else
 	return CONST_STRING;
 }
 
-\+|\-						printf("%s:\tADD_OP\n",yytext);
-\*|\/|\%					printf("%s:\tMULT_EXP\n",yytext);
-"<<"|">>"					printf("%s:\tEXP\n",yytext);
-"=="|"!="|"<"|">"|"<="|">="	printf("%s:\tCMP_OP\n",yytext);
-"="							printf("%s:\tASMENT\n",yytext);
-"("|")"|"{"|"}"|"["|"]"|","   ;
+\+	return PLUS;
+\-	return MINUS;						
+\*	return MULTI;
+\/	return DIV;
+"%"	return MODULO;				
+"<<"	return SHIFTLEFT;
+">>"	return SHIFTRIGHT;			
+"=="	return EGAL;
+"!="	return DIFF;
+"<"	return INF;
+">"	return SUP;
+"<="	return INFEQUAL;
+">="	return SUPEQUAL;
+"="	return ASSIGN;					
+"("	return '(';
+")"	return ')';
+"{"	return '{';
+"}"	return '}';
+"["	return '[';
+"]"	return ']';
+","   	return ',';
 ";"	return ';';
 
 
