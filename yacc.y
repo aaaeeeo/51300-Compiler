@@ -227,7 +227,7 @@ expression_postfixee {$$=$1;}
 
 expression_postfixee :  
 primary_expression {$$=$1;}
-| IDENT '(' argument_expression_list')' 
+| IDENT '(' argument_expression_list')' {}
 | IDENT '(' ')' 
 ;
 
@@ -237,10 +237,10 @@ expression
 ;
 
 primary_expression :  
-IDENT  { $$->code(); }
-| CONST_INT		{ $$->code(); }
-| CONST_STRING  { $$->code(); }
-| '(' expression ')'
+IDENT  { $$=$1; }
+| CONST_INT		{ $$=$1; }
+| CONST_STRING  { $$=$1; }
+| '(' expression ')'	{ $$=$2; }
 ;
 
 
@@ -249,7 +249,7 @@ IDENT  { $$->code(); }
 
 int yyerror(const char* msg)
 {
-	printf("ERROR: %s\n",msg);
+	cout<<"ERROR: "<<msg<<endl;
 }
 
 int main()
