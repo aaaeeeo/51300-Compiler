@@ -15,10 +15,11 @@ enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 class Node
 {
 public:
-	virtual void code()
-	{
-		cout<<"Node\n";
-	}
+    Node(){}
+    virtual void code()
+    {
+        cout<<"Node\n";
+    }
 
 };
 
@@ -27,110 +28,161 @@ public:
 class NExpression : public Node
 {
 public:
-	virtual void code()
-	{
-		cout<<"NExpression\n";
-	}
+    NExpression(){}
+    virtual void code()
+    {
+        cout<<"NExpression\n";
+    }
 };
 
 class NInstruction : public Node
 {
 public:
-	instrucationType type;
-	vector<NInstruction> insrtctionList;
-	virtual void code()
-	{
+    instrucationType type;
+    vector<NInstruction*> insrtctionList;
 
-	}
+    NInstruction(){}
+    virtual void code()
+    {
+        cout<<"NInstruction\n";
+    }
 };
 
 class NInt : public NExpression
 {
 public:
-	int value;
-	virtual void code()
-	{
-		cout<<"NInt: "<<value<<endl;
-	}
+    int value;
+
+    NInt(int value): value(value) {}
+    virtual void code()
+    {
+        cout<<"NInt: "<<value<<endl;
+    }
 };
 
 class NString : public NExpression
 {
 public:
-	string value;
-	virtual void code()
-	{
-		cout<<"NString: "<<value<<endl;
-	}
+    string value;
+
+    NString(string value): value(value) {}
+    virtual void code()
+    {
+        cout<<"NString: "<<value<<endl;
+    }
 };
 
 class NIdentifier : public NExpression
 {
 public:
-	string id;
-	virtual void code()
-	{
-		cout<<"NIdentifier: "<<id<<endl;
-	}
+    string id;
+
+    NIdentifier(string id): id(id) {}
+    virtual void code()
+    {
+        cout<<"NIdentifier: "<<id<<endl;
+    }
 };
 
 class _Variable
 {
 public:
-	variableType type;
-	NIdentifier id;
+    variableType type;
+    NIdentifier id;
 };
 
 class NVariableDeclaration : public NInstruction
 {
 public:
-	vector<_Variable> variableList;
+    vector<_Variable*> variableList;
+
+    NVariableDeclaration(){}
+    virtual void code()
+    {
+        cout<<"NVariableDeclaration"<<endl;
+    }
 };
 
 class NFunctionDeclaration : public NInstruction
 {
 public:
-	NIdentifier funcationName;
-	variableType returnType;
-	vector<_Variable> paraList;
+    NIdentifier funcationName;
+    variableType returnType;
+    vector<_Variable*> paraList;
+
+    NFunctionDeclaration(NIdentifier name):funcationName(name) {}
+    virtual void code()
+    {
+        cout<<"NFunctionDeclaration"<<endl;
+    }
 };
 
 class NUnaryOp : public NExpression
 {
 public:
-	unaryOP operation;
-	NExpression childExp;
+    unaryOP operation;
+    NExpression childExp;
+
+    NUnaryOp(){}
+    virtual void code()
+    {
+        cout<<"NUnaryOp"<<endl;
+    }
 };
 
 class NBinaryOp : public NExpression
 {
 public:
-	binaryOP operation;
-	NExpression leftExp;
-	NExpression rightExp;
+    binaryOP operation;
+    NExpression leftExp;
+    NExpression rightExp;
+
+    NBinaryOp(){}
+    virtual void code()
+    {
+        cout<<"NBinaryOp"<<endl;
+    }
 };
 
 class NFunctionCall : public NExpression
 {
 public:
-	NIdentifier funcationName;
-	vector<NIdentifier> argumentList;
+    NIdentifier funcationName;
+    vector<NIdentifier*> argumentList;
+
+    NFunctionCall(NIdentifier name):funcationName(name) {}
+    virtual void code()
+    {
+        cout<<"NFunctionCall"<<endl;
+    }
 };
 
 class NAssign : public Node
 {
 public:
-	NIdentifier id;
-	NExpression exp;
+    NIdentifier id;
+    NExpression exp;
+
+    NAssign(NIdentifier id):id(id) {}
+    virtual void code()
+    {
+        cout<<"NAssign"<<endl;
+    }
 };
 
 
 class NCondition : public Node
 {
 public:
-	comparisonOP operation;
-	NExpression leftExp;
-	NExpression rightExp;
+    comparisonOP operation;
+    NExpression leftExp;
+    NExpression rightExp;
+
+    NCondition(){}
+    virtual void code()
+    {
+        cout<<"NCondition"<<endl;
+    }
 };
 
 #endif
