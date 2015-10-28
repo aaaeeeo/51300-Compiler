@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 #define MAX 1000
-#define OUTFILE "code"
 
 int preprocessing(char * name);
 char df[MAX][MAX];
@@ -89,12 +88,12 @@ def "#define"
 int preprocessing(char * name)
 {
 	count=0;
-	yyin=fopen(name,"r");
-	if(!yyin)	return 1;
-	yyout=fopen(OUTFILE, "w");
+	//yyin=fopen(name,"r");
+	//if(!yyin)	return 1;
+	//yyout=fopen(OUTFILE, "w");
 	yylex();
-	fclose(yyin);
-	fclose(yyout);
+	//fclose(yyin);
+	//fclose(yyout);
 	return 0;
 }
 
@@ -102,8 +101,8 @@ int main()
 {
 	count=0;
 
-	yyout=fopen(OUTFILE, "w");
+	//yyout=fopen(OUTFILE, "w");
 	yylex();
-	fclose(yyout);
+	//fclose(yyout);
 	return 0;
 }

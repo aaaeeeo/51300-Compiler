@@ -1,11 +1,17 @@
 LEX=flex
 YACC=bison
 CC=g++
-OBJECT=main			#生成的目标文件
+OBJECT=main
+INTERN=code
+
+final: $(INTERN) $(OBJECT)
+	@./$(OBJECT)
+
+$(INTERN): preprocessing
+	@./preprocessing < add.c > $(INTERN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o -o $(OBJECT)
-	@./$(OBJECT)	#编译后立刻运行
 
 lex.yy.o: lex.yy.c  yacc.tab.h  main.h
 	$(CC) -c lex.yy.c
@@ -14,11 +20,16 @@ yacc.tab.o: yacc.tab.c  main.h
 	$(CC) -c yacc.tab.c
 
 yacc.tab.c  yacc.tab.h: yacc.y
-#	bison使用-d参数编译.y文件
-	$(YACC) -d yacc.y
+	$(YACC) -d -o yacc.tab.c yacc.y
 
-lex.yy.c: lex.l
-	$(LEX) lex.l
+lex.yy.c: parsing.lex
+	$(LEX) -o lex.yy.c parsing.lex
+
+preprocessing: preprocessing.lex.yy.c
+	$(CC) preprocessing.lex.yy.c -o preprocessing -ll
+
+preprocessing.lex.yy.c: preprocessing.lex
+	$(LEX) -o preprocessing.lex.yy.c preprocessing.lex
 
 clean:
 	@rm -f $(OBJECT)  *.o
