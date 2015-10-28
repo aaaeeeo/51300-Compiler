@@ -50,7 +50,7 @@ public:
 	int value;
 	virtual void code()
 	{
-		printf("NInt: %d\n", value);
+		cout<<"NInt: "<<value<<endl;
 	}
 };
 
