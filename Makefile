@@ -32,4 +32,4 @@ preprocessing.lex.yy.c: preprocessing.lex
 	$(LEX) -o preprocessing.lex.yy.c preprocessing.lex
 
 clean:
-	@rm -f $(OBJECT)  *.o
+	@rm -f $(OBJECT) $(INTERN) preprocessing *.o *.tab.* *.yy.*

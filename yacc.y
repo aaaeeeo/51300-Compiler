@@ -1,4 +1,5 @@
 %{
+#include "main.h"
 
 extern "C"
 {
@@ -44,6 +45,8 @@ extern "C"
 
 
 %%
+
+
 program :  
 external_declaration 
 | program external_declaration 
@@ -234,21 +237,22 @@ expression
 ;
 
 primary_expression :  
-IDENT  
-| CONST_INT
-| CONST_STRING 
+IDENT  { $$->code(); }
+| CONST_INT		{ $$->code(); }
+| CONST_STRING  { $$->code(); }
 | '(' expression ')'
 ;
 
 
+
 %%
 
-int yyerror(const char *s)
+int yyerror(const char* msg)
 {
-	
+	printf("ERROR: %s\n",msg);
 }
 
 int main()
 {
-	
+	yyparse();
 }
