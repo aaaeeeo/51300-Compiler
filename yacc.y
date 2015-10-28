@@ -226,13 +226,13 @@ expression_postfixee {$$=$1;}
 ;
 
 expression_postfixee :  
-primary_expression {$$=$1;}
+|primary_expression {$$=$1;}
 | IDENT '(' argument_expression_list')' {}
 | IDENT '(' ')' 
 ;
 
-argument_expression_list:  
-expression
+argument_expression_list: 	{ $$ = new} 
+| expression
 | argument_expression_list',' expression 
 ;
 
