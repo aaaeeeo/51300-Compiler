@@ -6,7 +6,7 @@
 #include <vector>
 using namespace std;
 
-enum instrucationType {T_COMPOUND, T_EXPRESSION, T_ITERATION, T_SELECT, T_JUMP};
+enum instrucationType {T_COMPOUND, T_EXPRESSION, T_DOITERATION, T_WHILEITERATION, T_FORITERATION, T_SELECT, T_JUMP};
 enum variableType {T_INT, T_STRING};
 enum unaryOP { T_NEGATIVE};
 enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRIGHT};
@@ -39,9 +39,12 @@ class NInstruction : public Node
 {
 public:
     instrucationType type;
-    vector<NInstruction*> insrtctionList;
+    vector<Node*> insrtctionList;
 
-    NInstruction(){}
+    NInstruction(instrucationType type, vector<Node*> insrtctionList): type(type), insrtctionList(insrtctionList)
+    {}
+    NInstruction(instrucationType type): type(type)
+    {}
     virtual void code()
     {
         cout<<"NInstruction\n";
@@ -171,9 +174,9 @@ class NAssign : public Node
 {
 public:
     Node* id;
-    NExpression exp;
+    Node* exp;
 
-    NAssign(Node* id):id(id) {}
+    NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
         cout<<"NAssign"<<endl;
@@ -185,8 +188,8 @@ class NCondition : public Node
 {
 public:
     comparisonOP operation;
-    NExpression leftExp;
-    NExpression rightExp;
+    Node* leftExp;
+    Node* rightExp;
 
     NCondition(){}
     virtual void code()
