@@ -6,6 +6,21 @@ extern "C"
 	int yyerror(const char *s);
 	extern int yylex(void);
 }
+
+vector< hash_map<string, int[3]>* > symbolTable;
+
+int cheackID(string id)
+{
+	for(int i=symbolTable.size()-1; i>=0; i--)
+	{
+		hash_map<string, int[3]> table( *(symbolTable.back()) );
+		if(table.find(name)!=mymap.end()) 
+        {
+        	return table[name][0];
+        }
+	}
+	return -1;
+}
 %}
 
 %token INT
@@ -61,8 +76,29 @@ external_declaration
 ;
 
 external_declaration :  
-declaration 	// Declaration Global			
-| EXTERN declaration // Set Extern attribute			
+declaration 	// Declaration Global
+{
+	vector<Node*> list = $1->getList();
+	variableType type = $1->getInt();
+	hash_map<string, int[3]> table( *(symbolTable.back()) );
+	for(int i=0; i<list.size(); i++)
+	{
+		string name = list.at(i)->getString();
+		int ar* = new int[3];
+		ar[0]= type;
+		ar[1]= list.at(i)->getInt();
+		ar[2]= 0;
+
+		if(table.find(name)!=mymap.end()) 
+        	yyerror("Redeclaration!");
+		else
+			table[name]=ar;
+	}
+}			
+| EXTERN declaration // Set Extern attribute	
+{
+
+}		
 | function_definition 
 ;
 
@@ -77,6 +113,10 @@ decl_glb_fct :
 
 declaration :  
 type declarator_list ';' 
+{
+	
+
+}
 ;
 
 type :  
@@ -150,10 +190,18 @@ block_start declaration_list instruction_list block_end //{$$=$3;}
 
 block_start :  
 '{'  // Init your hash table _ symbol table
+{
+	symbolTable.push_back( new hash_map<string, int[3]> );
+}
+
 ;
 
 block_end :  
 '}' // Empty hash table
+{
+	delete( symbolTable.back() );
+	symbolTable.pop_back();
+}
 ;
 
 instruction_list :  
@@ -245,7 +293,14 @@ expression 	{ $$=new vector<Node*>; $$->push_back($1); }
 ;
 
 primary_expression :  
-IDENT  { $$=$1; }
+IDENT  
+{ 
+	int type;
+	type = cheackID($1->getString());
+	if(type==-1)
+		yyerror("No declaration");
+	$$=$1; 
+}
 | CONST_INT		{ $$=$1; }
 | CONST_STRING  { $$=$1; }
 | '(' expression ')'	{ $$=$2; }

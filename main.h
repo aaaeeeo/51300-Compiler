@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <hash_map>
 using namespace std;
 
 enum instrucationType {T_COMPOUND, T_EXPRESSION, T_ITERATION, T_SELECT, T_JUMP};
@@ -21,6 +22,12 @@ public:
     {
         cout<<"Node\n";
     }
+    virtual string getString()
+    {}
+    virtual int getInt()
+    {}
+    virtual vector<Node*> getList()
+    {}
 
 };
 
@@ -76,44 +83,68 @@ class NIdentifier : public NExpression
 {
 public:
     string id;
+    variableType type;
 
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
         cout<<"NIdentifier: "<<id<<endl;
     }
+    virtual string getString()
+    {
+    	return id;
+    }
+    virtual int getInt()
+    {
+    	return type;
+    }
 };
 
-class _Variable
+class _Variable : public Node
 {
 public:
     variableType type;
     NIdentifier id;
 };
 
-class NVariableDeclaration : public NInstruction
+class NDeclaration : public NInstruction
 {
 public:
-    vector<_Variable*> variableList;
+	variableType type;
+    vector<Node*> declList; //NVarDeclaration
 
-    NVariableDeclaration(){}
+    NVariableDeclaration(variableType type, vector<Node*> declList):
+    type(type), declList(declList) {}
     virtual void code()
     {
         cout<<"NVariableDeclaration"<<endl;
     }
+    virtual vector<Node*> getList()
+    {
+    	return declList;
+    }
+    virtual getInt()
+    {
+    	return type;
+    }
 };
 
-class NFunctionDeclaration : public NInstruction
+class NVarDeclaration : public NInstruction
 {
 public:
-    NIdentifier funcationName;
-    variableType returnType;
-    vector<_Variable*> paraList;
+    Node* name;
+    bool isfun;
+    vector<Node*> paraList; //_Variable
 
-    NFunctionDeclaration(NIdentifier name):funcationName(name) {}
+    NFunctionDeclaration(NIdentifier name, bool isfun, vector<Node*> paraList):
+    name(name),isfun(isfun),paraList(paraList) {}
     virtual void code()
     {
         cout<<"NFunctionDeclaration"<<endl;
+    }
+    virtual void getInt()
+    {
+    	return isfun;
     }
 };
 
