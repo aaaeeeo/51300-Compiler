@@ -32,25 +32,23 @@ if(yyleng>31)
 else
 	{ 
 		string  str(yytext); 
-		NIdentifier* n = new NIdentifier();
-		n->id = str;
-		yylval=n;
+		NIdentifier* n = new NIdentifier(str);
+		yylval.u_node=n;
+		//printf("ID: %s\n", n->id.c_str());
 		return IDENT;
 	}
 }
 [0-9]+						{
-	NInt* n = new NInt();
-	n->value = atoi(yytext);
-	yylval=n;
-	printf("CONST_INT: %d\n", n->value);
+	NInt* n = new NInt(atoi(yytext));
+	yylval.u_node=n;
+	//printf("CONST_INT: %d\n", n->value);
 	return CONST_INT;
 	  }
 
 \"[^"]*\"					{
 	string  str(yytext); 
-	NString* n = new NString();
-	n->value = str;
-	yylval=n;
+	NString* n = new NString(str);
+	yylval.u_node=n;
 	return CONST_STRING;
 }
 
@@ -80,6 +78,7 @@ else
 
 
 \n 		;
+\t 		;
 " "		;
 .		yyerror(yytext);
 

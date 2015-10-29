@@ -5,10 +5,10 @@ OBJECT=main
 INTERN=code
 
 final: $(INTERN) $(OBJECT)
-	@./$(OBJECT)
+	@./$(OBJECT) < $(INTERN)
 
 $(INTERN): preprocessing
-	@./preprocessing < add.c > $(INTERN)
+	@./preprocessing < test.c > $(INTERN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o -o $(OBJECT)
