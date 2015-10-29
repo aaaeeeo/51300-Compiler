@@ -10,10 +10,10 @@ extern "C"
 
 %token INT
 %token STRING
-%token CONST_INT
-%token CONST_STRING
+%token<u_node> CONST_INT
+%token<u_node> CONST_STRING
 
-%token IDENT
+%token<u_node> IDENT
 
 %token EXTERN
 
@@ -42,7 +42,15 @@ extern "C"
 %token SHIFTLEFT
 %token MODULO
 
+%union {
+    Node *u_node;
+    vector<Node*>* u_list;
+}
 
+%type<u_node> instruction instruction1 compound_instruction iteration_instruction iteration_instruction1 expression_instruction select_instruction select_instruction1 jump_instruction
+%type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression
+
+%type<u_list> argument_expression_list
 
 %%
 
@@ -133,9 +141,9 @@ IDENT ASSIGN expression
 ;
 
 compound_instruction :  
-block_start declaration_list instruction_list block_end {$$=$3;}
+block_start declaration_list instruction_list block_end //{$$=$3;}
 | block_start declaration_list block_end 
-| block_start instruction_list block_end {$$=$2;}
+| block_start instruction_list block_end //{$$=$2;}
 | block_start block_end 
 ;
 
@@ -149,7 +157,7 @@ block_end :
 ;
 
 instruction_list :  
-instruction  {$$=$1;}
+instruction  //{$$=$1;}
 | instruction_list instruction 
 ;
 
@@ -163,7 +171,7 @@ cond_instruction instruction1 ELSE instruction1
 ;
 
 cond_instruction :  
-IF '(' condition ')' {$$=$3;} 
+IF '(' condition ')' //{$$=$3;} 
 ;
 
 iteration_instruction :  
@@ -202,38 +210,38 @@ EGAL  {//$$.entier=EGAL;
 ;
 
 expression :  
-expression_additive {$$=$1;}
-| expression SHIFTLEFT expression_additive //  Compute expression
-| expression SHIFTRIGHT expression_additive // Compute expression
+expression_additive { $$=$1; $$->code();}
+| expression SHIFTLEFT expression_additive { $$ = new NBinaryOp(T_SHIFTLEFT, $1, $3); }
+| expression SHIFTRIGHT expression_additive { $$ = new NBinaryOp(T_SHIFTRIGHT, $1, $3); }
 ;
 
 expression_additive :  
-expression_multiplicative {$$=$1;}
-| expression_additive PLUS expression_multiplicative // Compute expression
-| expression_additive MINUS expression_multiplicative // Compute expression
+expression_multiplicative { $$=$1;}
+| expression_additive PLUS expression_multiplicative { $$ = new NBinaryOp(T_PLUS, $1, $3); }
+| expression_additive MINUS expression_multiplicative { $$ = new NBinaryOp(T_MINUS, $1, $3); }
 ;
 
 expression_multiplicative :  
-unary_expression{$$=$1;}
-| expression_multiplicative MULTI unary_expression
-| expression_multiplicative DIV unary_expression
-| expression_multiplicative MODULO unary_expression
+unary_expression { $$=$1;}
+| expression_multiplicative MULTI unary_expression { $$ = new NBinaryOp(T_MULTI, $1, $3); }
+| expression_multiplicative DIV unary_expression { $$ = new NBinaryOp(T_DIV, $1, $3); }
+| expression_multiplicative MODULO unary_expression { $$ = new NBinaryOp(T_MODULE, $1, $3); }
 ;
 
 unary_expression:  
-expression_postfixee {$$=$1;}
-| MINUS unary_expression
+expression_postfixee { $$=$1;}
+| MINUS unary_expression { $$=new NUnaryOp(T_NEGATIVE, $2); }
 ;
 
 expression_postfixee :  
-|primary_expression {$$=$1;}
-| IDENT '(' argument_expression_list')' {}
-| IDENT '(' ')' 
+primary_expression {$$=$1;}
+| IDENT '(' argument_expression_list')' { $$=new NFunctionCall($1, *$3); }
+| IDENT '(' ')' { $$=new NFunctionCall($1); }
 ;
 
-argument_expression_list: 	{ $$ = new} 
-| expression
-| argument_expression_list',' expression 
+argument_expression_list:  
+expression 	{ $$=new vector<Node*>; $$->push_back($1); }
+| argument_expression_list',' expression { $1->push_back($3); $$=$1; }
 ;
 
 primary_expression :  

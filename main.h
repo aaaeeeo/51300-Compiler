@@ -12,6 +12,7 @@ enum unaryOP { T_NEGATIVE};
 enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRIGHT};
 enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 
+
 class Node
 {
 public:
@@ -23,7 +24,6 @@ public:
 
 };
 
-#define YYSTYPE Node*
 
 class NExpression : public Node
 {
@@ -121,9 +121,11 @@ class NUnaryOp : public NExpression
 {
 public:
     unaryOP operation;
-    NExpression childExp;
+    Node* childExp;
 
-    NUnaryOp(){}
+    NUnaryOp(unaryOP operation, Node* childExp):
+    operation(operation), childExp(childExp)
+    {}
     virtual void code()
     {
         cout<<"NUnaryOp"<<endl;
@@ -134,23 +136,31 @@ class NBinaryOp : public NExpression
 {
 public:
     binaryOP operation;
-    NExpression leftExp;
-    NExpression rightExp;
+    Node* leftExp;
+    Node* rightExp;
 
-    NBinaryOp(){}
+    NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
+    operation(operation), leftExp(leftExp), rightExp(rightExp)
+    {}
     virtual void code()
     {
-        cout<<"NBinaryOp"<<endl;
+        cout<<"**NBinaryOp**\n";
+        leftExp->code();
+        rightExp->code();
     }
 };
 
 class NFunctionCall : public NExpression
 {
 public:
-    NIdentifier funcationName;
-    vector<NIdentifier*> argumentList;
+    Node* funcationName;
+    vector<Node*> argumentList;
 
-    NFunctionCall(NIdentifier name):funcationName(name) {}
+    NFunctionCall(Node* name, vector<Node*> argumentList):
+    funcationName(name),argumentList(argumentList) {}
+
+    NFunctionCall(Node* name):
+    funcationName(name) {}
     virtual void code()
     {
         cout<<"NFunctionCall"<<endl;
@@ -160,10 +170,10 @@ public:
 class NAssign : public Node
 {
 public:
-    NIdentifier id;
+    Node* id;
     NExpression exp;
 
-    NAssign(NIdentifier id):id(id) {}
+    NAssign(Node* id):id(id) {}
     virtual void code()
     {
         cout<<"NAssign"<<endl;
