@@ -14,7 +14,7 @@ int cheackID(string id)
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
 		hash_map<string, int[3]> table( *(symbolTable.back()) );
-		if(table.find(name)!=mymap.end()) 
+		if(table.find(name)!=table.end()) 
         {
         	return table[name][0];
         }
@@ -65,7 +65,8 @@ int cheackID(string id)
 
 %type<u_node> instruction instruction1 compound_instruction iteration_instruction iteration_instruction1 expression_instruction select_instruction select_instruction1 jump_instruction
 %type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression
-%type<u_list> argument_expression_list
+%type<u_node> program external_declaration declaration function_definition assignment  cond_instruction condition
+%type<u_list> argument_expression_list declarator_list instruction_list
 %type<u_i> comparison_operator 
 %%
 
@@ -80,20 +81,21 @@ declaration 	// Declaration Global
 {
 	vector<Node*> list = $1->getList();
 	variableType type = $1->getInt();
-	hash_map<string, int[3]> table( *(symbolTable.back()) );
+	hash_map<string, int[3]> table();
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
-		int ar* = new int[3];
+		int *ar = new int[3];
 		ar[0]= type;
 		ar[1]= list.at(i)->getInt();
 		ar[2]= 0;
 
-		if(table.find(name)!=mymap.end()) 
+		if(table.find(name)!=table.end()) 
         	yyerror("Redeclaration!");
 		else
 			table[name]=ar;
 	}
+	symbolTable.push_back(&table);
 }			
 | EXTERN declaration // Set Extern attribute	
 {
@@ -131,6 +133,24 @@ declarator 				// Propagate code
 
 declaration_list :  
 declaration 				// Set locals
+{
+	vector<Node*> list = $1->getList();
+	variableType type = $1->getInt();
+	hash_map<string, int[3]> table = *(symbolTable.back()) );
+	for(int i=0; i<list.size(); i++)
+	{
+		string name = list.at(i)->getString();
+		int *ar = new int[3];
+		ar[0]= type;
+		ar[1]= list.at(i)->getInt();
+		ar[2]= 0;
+
+		if(table.find(name)!=table.end()) 
+        	yyerror("Redeclaration!");
+		else
+			table[name]=ar;
+	}
+}
 | declaration_list declaration  	// Set locals
 ;
 
@@ -184,7 +204,7 @@ compound_instruction :
 block_start declaration_list instruction_list block_end //{$$=$3;}
 | block_start declaration_list block_end 
 | block_start instruction_list block_end {vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NInstruction(T_COMPOUND, *vec);}
-| block_start block_end  { $$ = new NIstruction(T_COMPOUND); }
+| block_start block_end  { $$ = new NInstruction(T_COMPOUND); }
 ;
 
 
@@ -275,7 +295,7 @@ WHILE '(' condition ')' instruction1  {
 ;
 
 jump_instruction:  
-RETURN expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NIntruction(T_JUMP, *vec); }
+RETURN expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NInstruction(T_JUMP, *vec); }
 ;
 
 condition :  

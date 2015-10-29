@@ -4,8 +4,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <hash_map>
+#include <ext/hash_map>
 using namespace std;
+using namespace __gnu_cxx;
 
 enum instrucationType {T_COMPOUND, T_EXPRESSION, T_DOITERATION, T_WHILEITERATION, T_FORITERATION, T_SELECT, T_JUMP};
 enum variableType {T_INT, T_STRING};
@@ -51,6 +52,8 @@ public:
     NInstruction(instrucationType type, vector<Node*> insrtctionList): type(type), insrtctionList(insrtctionList)
     {}
     NInstruction(instrucationType type): type(type)
+    {}
+    NInstruction()
     {}
     virtual void code()
     {
@@ -116,17 +119,17 @@ public:
 	variableType type;
     vector<Node*> declList; //NVarDeclaration
 
-    NVariableDeclaration(variableType type, vector<Node*> declList):
+    NDeclaration(variableType type, vector<Node*> declList):
     type(type), declList(declList) {}
     virtual void code()
     {
-        cout<<"NVariableDeclaration"<<endl;
+        cout<<"NDeclaration"<<endl;
     }
     virtual vector<Node*> getList()
     {
     	return declList;
     }
-    virtual getInt()
+    virtual int getInt()
     {
     	return type;
     }
@@ -139,13 +142,13 @@ public:
     bool isfun;
     vector<Node*> paraList; //_Variable
 
-    NFunctionDeclaration(NIdentifier name, bool isfun, vector<Node*> paraList):
+    NVarDeclaration(Node* name, bool isfun, vector<Node*> paraList):
     name(name),isfun(isfun),paraList(paraList) {}
     virtual void code()
     {
-        cout<<"NFunctionDeclaration"<<endl;
+        cout<<"NVarDeclaration"<<endl;
     }
-    virtual void getInt()
+    virtual int getInt()
     {
     	return isfun;
     }
