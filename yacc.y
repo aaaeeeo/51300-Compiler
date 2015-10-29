@@ -23,8 +23,8 @@ int cheackID(string id)
 }
 %}
 
-%token INT
-%token STRING
+%token<u_i> INT
+%token<u_i> STRING
 %token<u_node> CONST_INT
 %token<u_node> CONST_STRING
 
@@ -41,32 +41,32 @@ int cheackID(string id)
 %token THEN
 
 %token ASSIGN
-%token INF
-%token EGAL
-%token SUP
-%token INFEQUAL
-%token SUPEQUAL
-%token DIFF
+%token<u_i> INF
+%token<u_i> EGAL
+%token<u_i> SUP
+%token<u_i> INFEQUAL
+%token<u_i> SUPEQUAL
+%token<u_i> DIFF
 
-%token PLUS
-%token MINUS
-%token MULTI
-%token DIV
+%token<u_i> PLUS
+%token<u_i> MINUS
+%token<u_i> MULTI
+%token<u_i> DIV
 
 %token SHIFTRIGHT
 %token SHIFTLEFT
-%token MODULO
+%token<u_i> MODULO
 
 %union {
+    int u_i;
     Node *u_node;
     vector<Node*>* u_list;
 }
 
 %type<u_node> instruction instruction1 compound_instruction iteration_instruction iteration_instruction1 expression_instruction select_instruction select_instruction1 jump_instruction
 %type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression
-
 %type<u_list> argument_expression_list
-
+%type<u_i> comparison_operator 
 %%
 
 
@@ -172,19 +172,19 @@ instruction1 :
 ;
 
 expression_instruction :              
-expression ';'   
-| assignment ';' 
+expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = new NInstruction(T_EXPRESSION, *vec); }  
+| assignment ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = new NInstruction(T_EXPRESSION, *vec); }
 ;
 
 assignment :  
-IDENT ASSIGN expression 
+IDENT ASSIGN expression  { $$ = new NAssign($1, $3);}
 ;
 
 compound_instruction :  
 block_start declaration_list instruction_list block_end //{$$=$3;}
 | block_start declaration_list block_end 
-| block_start instruction_list block_end //{$$=$2;}
-| block_start block_end 
+| block_start instruction_list block_end {vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NInstruction(T_COMPOUND, *vec);}
+| block_start block_end  { $$ = new NIstruction(T_COMPOUND); }
 ;
 
 
@@ -205,56 +205,90 @@ block_end :
 ;
 
 instruction_list :  
-instruction  //{$$=$1;}
-| instruction_list instruction 
+instruction  { $$=new vector<Node*>; $$->push_back($1); }
+| instruction_list instruction  { $1->push_back($2); $$ = $1; }
 ;
 
 select_instruction :  
-cond_instruction instruction 
-| cond_instruction instruction1 ELSE instruction 
+cond_instruction instruction { 
+	vector<Node*>* vec = new vector<Node*>;
+	vec->push_back($1);
+	vec->push_back($2);
+	$$ = new NInstruction(T_SELECT, *vec); }
+| cond_instruction instruction1 ELSE instruction { 
+	vector<Node*>* vec = new vector<Node*>;
+	vec->push_back($1);
+	vec->push_back($2);
+	vec->push_back($4);
+	$$ = new NInstruction(T_SELECT, *vec); }
 ;
 
 select_instruction1 :   
-cond_instruction instruction1 ELSE instruction1 
+cond_instruction instruction1 ELSE instruction1 { 
+	vector<Node*>* vec = new vector<Node*>;
+	vec->push_back($1);
+	vec->push_back($2);
+	vec->push_back($4);
+	$$ = new NInstruction(T_SELECT, *vec); }
 ;
 
 cond_instruction :  
-IF '(' condition ')' //{$$=$3;} 
+IF '(' condition ')' {$$=$3;} 
 ;
 
 iteration_instruction :  
-WHILE '(' condition ')' instruction // Handle while loop
-| DO instruction WHILE '(' condition ')' 
-| FOR '(' assignment ';' condition ';' assignment ')' instruction 
+WHILE '(' condition ')' instruction {
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($3); 
+	vec->push_back($5); 
+        $$ = new NInstruction(T_WHILEITERATION, *vec); }
+| DO instruction WHILE '(' condition ')' { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($2); 
+	vec->push_back($5);
+	$$ = new NInstruction(T_DOITERATION, *vec); }
+| FOR '(' assignment ';' condition ';' assignment ')' instruction { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($3); 
+	vec->push_back($5); 
+	vec->push_back($7); 
+	$$ = new NInstruction(T_FORITERATION, *vec);}
 ;
 
 iteration_instruction1 :  
-WHILE '(' condition ')' instruction1 // Handle while loop
-| DO instruction WHILE '(' condition ')' 
-| FOR '(' assignment ';' condition ';' assignment ')' instruction1 
+WHILE '(' condition ')' instruction1  {
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($3); 
+	vec->push_back($5); 
+        $$ = new NInstruction(T_WHILEITERATION, *vec); }
+| DO instruction WHILE '(' condition ')'  { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($2); 
+	vec->push_back($5);
+	$$ = new NInstruction(T_DOITERATION, *vec); }
+| FOR '(' assignment ';' condition ';' assignment ')' instruction1  { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($3); 
+	vec->push_back($5); 
+	vec->push_back($7); 
+	$$ = new NInstruction(T_FORITERATION, *vec);}
 ;
 
 jump_instruction:  
-RETURN expression ';' 
+RETURN expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NIntruction(T_JUMP, *vec); }
 ;
 
 condition :  
-expression comparison_operator expression 
+expression comparison_operator expression { $$ = new NCondition($2, $1, $3); }
 ;
 
 comparison_operator :  
-EGAL  {//$$.entier=EGAL;
-}
-| DIFF {//$$.entier=DIFF;
-} 
-| INF  {//$$.entier=INF;
-}
-| SUP  {//$$.entier=SUP;
-}
-| INFEQUAL {//$$.entier=INFEQUAL;
-}
-| SUPEQUAL {//$$.entier=SUPEQUAL;
-} 
+EGAL   { $$ = T_EGAL;}
+| DIFF { $$ = T_DIFF;} 
+| INF  { $$ = T_INF;}
+| SUP  { $$ = T_SUP;}
+| INFEQUAL { $$ = T_INFEQUAL;}
+| SUPEQUAL { $$ = T_SUPEQUAL;} 
 ;
 
 expression :  
