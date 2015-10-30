@@ -113,21 +113,17 @@ decl_glb_fct :
 ;
 
 declaration :  
-type declarator_list ';' 
-{
-	
-
-}
+type declarator_list ';' { $$ = new NDeclaration($1, *$2); }
 ;
 
 type :  
-INT 					// set INT
-| STRING 				// set String
+INT  { $$ = 0;} 					// set INT
+| STRING  { $$ = 1; }				// set String
 ;
 
 declarator_list :  
-declarator 				// Propagate code
-| declarator_list ',' declarator 	
+declarator { $$ = new vector<Node*>; $$->push_back($1); }				// Propagate code
+| declarator_list ',' declarator { $1->push_back($3); $$ = $1; }	
 ;
 
 declaration_list :  
@@ -154,22 +150,22 @@ declaration 				// Set locals
 ;
 
 declarator :  
-IDENT 					// Create Variable
-| function_declarator 		        // Create Function
+IDENT  { $$ = new NVarDeclaration($1, 0); }					// Create Variable
+| function_declarator { $$ = $1; }		        // Create Function
 ;
 
 function_declarator :  
-IDENT '(' ')' 				// Create function name
-| IDENT '(' parameter_list ')'  	// Create partial function 
+IDENT '(' ')' { $$ = new NVarDeclaration($1, 1); }				// Create function name
+| IDENT '(' parameter_list ')' {$$ = new NVarDeclaration($1, 1, *$3); } 	// Create partial function 
 ;
 
 parameter_list :  
-parameter_declaration 			
-| parameter_list ',' parameter_declaration // Insert parameters
+parameter_declaration { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = vec; }			
+| parameter_list ',' parameter_declaration { $1->push_back($3); $$ = $1; }// Insert parameters
 ;
 
 parameter_declaration :  
-type IDENT 				// Type declaration
+type IDENT   { $$ = new _Variable($1, $2); }// Type declaration
 ;
 
 instruction :  
@@ -196,7 +192,7 @@ expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ 
 ;
 
 assignment :  
-IDENT ASSIGN expression  { $$ = new NAssign($1, $3);}
+IDENT ASSIGN expression  { $$ = new NAssign($1, $3); }
 ;
 
 compound_instruction :  
