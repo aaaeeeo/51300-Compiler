@@ -19,13 +19,21 @@ int checkID(string id)
 {
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
-		unordered_map<string, int>* table = symbolTable.back()  ;
-		if(table.find(id)!=table.end()) 
+		unordered_map<string, int>* table = symbolTable.at(i) ;
+		if(table->find(id)!=table->end()) 
         {
-        	return table[id];
+        	return (*table)[id];
         }
+        //cout<<"not found in "<<i<<endl;
 	}
 	return -1;
+}
+
+void print_table( unordered_map<string, int>* tb)
+{
+	cout<<"------------Symbol Table--------------"<<endl;
+	for ( auto it = tb->begin(); it != tb->end(); it++ )
+    	cout << it->first << "\t" << it->second<<endl;
 }
 
 %}
@@ -82,6 +90,7 @@ program :
 external_declaration 
 | program external_declaration 
 ;
+
 
 external_declaration :  
 declaration 	// Declaration Global
@@ -396,7 +405,7 @@ IDENT
 	
 	type = checkID($1->getString());
 	if(type==-1)
-		cout<<"No declaration"<<endl;
+		yyerror("No declaration");
 	
 	$$=$1; 
 }
