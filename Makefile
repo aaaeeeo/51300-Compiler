@@ -14,10 +14,10 @@ $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o -o $(OBJECT)
 
 lex.yy.o: lex.yy.c  yacc.tab.h  main.h
-	$(CC) -c lex.yy.c -std=c++0x
+	$(CC) -c lex.yy.c -std=c++11
 
 yacc.tab.o: yacc.tab.c  main.h
-	$(CC) -c yacc.tab.c
+	$(CC) -c yacc.tab.c -std=c++11
 
 yacc.tab.c  yacc.tab.h: yacc.y
 	$(YACC) -d -o yacc.tab.c yacc.y

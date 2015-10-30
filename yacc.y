@@ -87,8 +87,8 @@ void print_table( unordered_map<string, int>* tb)
 
 
 program :  
-external_declaration { vector<Node*>* vec = new vector(Node*); vec->push_back($1); $$ = new NInstruction(T_PROGRAM, *vec); }
-| program external_declaration { (NInstruction*)$1.instructionList->push_back($2); }
+external_declaration { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = new NInstruction(T_PROGRAM, *vec); }
+| program external_declaration {( (NInstruction*)$1)->instructionList.push_back($2); }
 ;
 
 
@@ -142,10 +142,13 @@ declaration 	// Declaration Global
 
 function_definition :  
 type function_declarator decl_glb_fct compound_instruction { 
-	vector<Node*>* vec = new vector<Node*>; 
-	vec->push_back($2); 
-	vec->push_back($4);
-	$$ = new NInstrunction(variableType($1), *vec); }// generate code function
+	vector<Node*>* vec1 = new vector<Node*>; 
+	vec1->push_back($2); 	
+	Node* dec = new NDeclaration(variableType($1), *vec1);
+	vector<Node*>* vec2 = new vector<Node*>;
+	vec2->push_back(dec);
+	vec2->push_back($4);
+	$$ = new NInstruction(T_FUNCTION, *vec2); }// generate code function
   
 ;
 
@@ -192,7 +195,7 @@ declaration 				// Set locals
 }
 | declaration_list declaration  	// Set locals
 {
-	$1->bush_back($2); $$ = $1;
+	$1->push_back($2); $$ = $1;
 
 	vector<Node*> list = $2->getList();
 	int type = $2->getInt();

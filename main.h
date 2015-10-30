@@ -7,7 +7,7 @@
 #include <unordered_map>
 using namespace std;
 
-enum instrucationType {T_PROGRAM, T_FUNCTION, T_COMPOUND, T_EXPRESSION, T_DOITERATION, T_WHILEITERATION, T_FORITERATION, T_SELECT, T_JUMP};
+enum instructionType {T_PROGRAM, T_FUNCTION, T_COMPOUND, T_EXPRESSION, T_DOITERATION, T_WHILEITERATION, T_FORITERATION, T_SELECT, T_JUMP};
 enum variableType {T_INT, T_STRING};
 enum unaryOP { T_NEGATIVE};
 enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRIGHT};
@@ -45,12 +45,12 @@ public:
 class NInstruction : public Node
 {
 public:
-    instrucationType type;
-    vector<Node*> insrtctionList;
+    instructionType type;
+    vector<Node*> instructionList;
 
-    NInstruction(instrucationType type, vector<Node*> insrtctionList): type(type), insrtctionList(insrtctionList)
+    NInstruction(instructionType type, vector<Node*> instructionList): type(type), instructionList(instructionList)
     {}
-    NInstruction(instrucationType type): type(type)
+    NInstruction(instructionType type): type(type)
     {}
     NInstruction()
     {}
