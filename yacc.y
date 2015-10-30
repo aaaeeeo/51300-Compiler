@@ -73,19 +73,21 @@ int checkID(string id)
 %type<u_node> instruction instruction1 compound_instruction iteration_instruction iteration_instruction1 expression_instruction select_instruction select_instruction1 jump_instruction
 %type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression declarator function_declarator parameter_declaration
 %type<u_node> program external_declaration declaration function_definition assignment  cond_instruction condition
-%type<u_list> argument_expression_list declarator_list instruction_list parameter_list
+%type<u_list> argument_expression_list declarator_list instruction_list parameter_list declaration_list
 %type<u_i> comparison_operator type
 %%
 
 
 program :  
-external_declaration 
-| program external_declaration 
+external_declaration { vector<Node*>* vec = new vector(Node*); vec->push_back($1); $$ = new NInstruction(T_PROGRAM, *vec); }
+| program external_declaration { (NInstruction*)$1.instructionList->push_back($2); }
 ;
 
 external_declaration :  
 declaration 	// Declaration Global
 {
+	$$ = $1;
+
 	vector<Node*> list = $1->getList();
 	int type = $1->getInt();
 	unordered_map<string, int>* table = symbolTable.at(1);
@@ -106,6 +108,8 @@ declaration 	// Declaration Global
 }			
 | EXTERN declaration // Set Extern attribute	
 {
+	$$ = $2;
+
 	vector<Node*> list = $2->getList();
 	int type = $2->getInt();
 	unordered_map<string, int>* table = symbolTable.at(0);
@@ -124,11 +128,15 @@ declaration 	// Declaration Global
 			(*table)[name] = type;
 	}
 }		
-| function_definition 
+| function_definition { $$ = $1; }
 ;
 
 function_definition :  
-type function_declarator decl_glb_fct compound_instruction // generate code function
+type function_declarator decl_glb_fct compound_instruction { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->push_back($2); 
+	vec->push_back($4);
+	$$ = new NInstrunction(variableType($1), *vec); }// generate code function
   
 ;
 
@@ -137,7 +145,7 @@ decl_glb_fct :
 ;
 
 declaration :  
-type declarator_list ';' { $$ = new NDeclaration( variableType($1), *$2); }
+type declarator_list ';' { $$ = new NDeclaration(variableType($1), *$2); }
 ;
 
 type :  
@@ -153,6 +161,7 @@ declarator { $$ = new vector<Node*>; $$->push_back($1);}				// Propagate code
 declaration_list :  
 declaration 				// Set locals
 {
+	$$ = new vector<Node*>; $$->push_back($1);	
 	
 	vector<Node*> list = $1->getList();
 	int type = $1->getInt();
@@ -174,6 +183,8 @@ declaration 				// Set locals
 }
 | declaration_list declaration  	// Set locals
 {
+	$1->bush_back($2); $$ = $1;
+
 	vector<Node*> list = $2->getList();
 	int type = $2->getInt();
 	unordered_map<string, int>* table = symbolTable.back();
@@ -241,8 +252,12 @@ IDENT ASSIGN expression  { $$ = new NAssign($1, $3); }
 ;
 
 compound_instruction :  
-block_start declaration_list instruction_list block_end //{$$=$3;}
-| block_start declaration_list block_end 
+block_start declaration_list instruction_list block_end { 
+	vector<Node*>* vec = new vector<Node*>; 
+	vec->insert(vec->end(), $2->begin(), $2->end());
+	vec->insert(vec->end(), $3->begin(), $3->end());
+	$$ = new NInstruction(T_COMPOUND, *vec); }//{$$=$3;}
+| block_start declaration_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);}
 | block_start instruction_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);}
 | block_start block_end  { $$ = new NInstruction(T_COMPOUND); }
 ;
