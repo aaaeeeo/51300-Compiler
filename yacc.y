@@ -7,13 +7,13 @@ extern "C"
 	extern int yylex(void);
 }
 
-vector< hash_map<string, int[3]>* > symbolTable;
+vector< hash_map<string, int[2]>* > symbolTable;
 
 int cheackID(string id)
 {
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
-		hash_map<string, int[3]> table( *(symbolTable.back()) );
+		hash_map<string, int[2]> table( *(symbolTable.back()) );
 		if(table.find(name)!=table.end()) 
         {
         	return table[name][0];
@@ -81,14 +81,13 @@ declaration 	// Declaration Global
 {
 	vector<Node*> list = $1->getList();
 	variableType type = $1->getInt();
-	hash_map<string, int[3]> table();
+	hash_map<string, int[2]> table;
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
-		int *ar = new int[3];
+		int *ar = new int[2];
 		ar[0]= type;
 		ar[1]= list.at(i)->getInt();
-		ar[2]= 0;
 
 		if(table.find(name)!=table.end()) 
         	yyerror("Redeclaration!");

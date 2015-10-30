@@ -110,7 +110,10 @@ class _Variable : public Node
 {
 public:
     variableType type;
-    NIdentifier id;
+    Node* id;
+    _Variable(variableType type, Node* id):
+    type(type), id(id)
+    {}
 };
 
 class NDeclaration : public NInstruction
@@ -121,6 +124,7 @@ public:
 
     NDeclaration(variableType type, vector<Node*> declList):
     type(type), declList(declList) {}
+
     virtual void code()
     {
         cout<<"NDeclaration"<<endl;
@@ -144,6 +148,9 @@ public:
 
     NVarDeclaration(Node* name, bool isfun, vector<Node*> paraList):
     name(name),isfun(isfun),paraList(paraList) {}
+    NVarDeclaration(Node* name, bool isfun):
+    name(name),isfun(isfun) {}
+
     virtual void code()
     {
         cout<<"NVarDeclaration"<<endl;
