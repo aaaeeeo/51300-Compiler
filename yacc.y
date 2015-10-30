@@ -1,5 +1,6 @@
 %{
 #include "main.h"
+using namespace std;
 
 extern "C"
 {
@@ -7,20 +8,26 @@ extern "C"
 	extern int yylex(void);
 }
 
-vector< hash_map<string, int[2]>* > symbolTable;
+// 0 for int
+// 1 for string
+// 2 for int function 
+// 3 for string function
+vector< unordered_map<string, int>* > symbolTable;
 
-int cheackID(string id)
+
+int checkID(string id)
 {
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
-		hash_map<string, int[2]> table( *(symbolTable.back()) );
-		if(table.find(name)!=table.end()) 
+		unordered_map<string, int>* table = symbolTable.back()  ;
+		if(table.find(id)!=table.end()) 
         {
-        	return table[name][0];
+        	return table[id];
         }
 	}
 	return -1;
 }
+
 %}
 
 %token<u_i> INT
@@ -64,10 +71,10 @@ int cheackID(string id)
 }
 
 %type<u_node> instruction instruction1 compound_instruction iteration_instruction iteration_instruction1 expression_instruction select_instruction select_instruction1 jump_instruction
-%type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression
+%type<u_node> expression expression_additive expression_multiplicative unary_expression expression_postfixee primary_expression declarator function_declarator parameter_declaration
 %type<u_node> program external_declaration declaration function_definition assignment  cond_instruction condition
-%type<u_list> argument_expression_list declarator_list instruction_list
-%type<u_i> comparison_operator 
+%type<u_list> argument_expression_list declarator_list instruction_list parameter_list
+%type<u_i> comparison_operator type
 %%
 
 
@@ -80,25 +87,42 @@ external_declaration :
 declaration 	// Declaration Global
 {
 	vector<Node*> list = $1->getList();
-	variableType type = $1->getInt();
-	hash_map<string, int[2]> table;
+	int type = $1->getInt();
+	unordered_map<string, int>* table = symbolTable.at(1);
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
-		int *ar = new int[2];
-		ar[0]= type;
-		ar[1]= list.at(i)->getInt();
-
-		if(table.find(name)!=table.end()) 
+		
+		if(list.at(i)->getInt()==1)
+		{
+			type+=2;
+		}
+		cout<<"GLB ID:"<<name<<","<<type<<endl;
+		if(table->find(name)!=table->end()) 
         	yyerror("Redeclaration!");
 		else
-			table[name]=ar;
+			(*table)[name] = type;
 	}
-	symbolTable.push_back(&table);
 }			
 | EXTERN declaration // Set Extern attribute	
 {
-
+	vector<Node*> list = $2->getList();
+	int type = $2->getInt();
+	unordered_map<string, int>* table = symbolTable.at(0);
+	for(int i=0; i<list.size(); i++)
+	{
+		string name = list.at(i)->getString();
+		
+		if(list.at(i)->getInt()==1)
+		{
+			type+=2;
+		}
+		cout<<"extern ID:"<<name<<","<<type<<endl;
+		if(table->find(name)!=table->end()) 
+        	yyerror("Redeclaration!");
+		else
+			(*table)[name] = type;
+	}
 }		
 | function_definition 
 ;
@@ -113,44 +137,65 @@ decl_glb_fct :
 ;
 
 declaration :  
-type declarator_list ';' { $$ = new NDeclaration($1, *$2); }
+type declarator_list ';' { $$ = new NDeclaration( variableType($1), *$2); }
 ;
 
 type :  
-INT  { $$ = 0;} 					// set INT
-| STRING  { $$ = 1; }				// set String
+INT  { $$ = T_INT;} 					// set INT
+| STRING  { $$ = T_STRING; }				// set String
 ;
 
 declarator_list :  
-declarator { $$ = new vector<Node*>; $$->push_back($1); }				// Propagate code
+declarator { $$ = new vector<Node*>; $$->push_back($1);}				// Propagate code
 | declarator_list ',' declarator { $1->push_back($3); $$ = $1; }	
 ;
 
 declaration_list :  
 declaration 				// Set locals
 {
+	
 	vector<Node*> list = $1->getList();
-	variableType type = $1->getInt();
-	hash_map<string, int[3]> table = *(symbolTable.back()) );
+	int type = $1->getInt();
+	unordered_map<string, int>* table = symbolTable.back();
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
-		int *ar = new int[3];
-		ar[0]= type;
-		ar[1]= list.at(i)->getInt();
-		ar[2]= 0;
-
-		if(table.find(name)!=table.end()) 
+		
+		if(list.at(i)->getInt()==1)
+		{
+			type+=2;
+		}
+		cout<<"LOCAL ID:"<<name<<","<<type<<endl;
+		if(table->find(name)!=table->end()) 
         	yyerror("Redeclaration!");
 		else
-			table[name]=ar;
+			(*table)[name] = type;
 	}
 }
 | declaration_list declaration  	// Set locals
+{
+	vector<Node*> list = $2->getList();
+	int type = $2->getInt();
+	unordered_map<string, int>* table = symbolTable.back();
+	for(int i=0; i<list.size(); i++)
+	{
+		string name = list.at(i)->getString();
+		
+		if(list.at(i)->getInt()==1)
+		{
+			type+=2;
+		}
+		cout<<"LOCAL ID:"<<name<<","<<type<<endl;
+		if(table->find(name)!=table->end()) 
+        	yyerror("Redeclaration!");
+		else
+			(*table)[name] = type;
+	}
+}
 ;
 
 declarator :  
-IDENT  { $$ = new NVarDeclaration($1, 0); }					// Create Variable
+IDENT  { $$ = new NVarDeclaration($1, 0);}					// Create Variable
 | function_declarator { $$ = $1; }		        // Create Function
 ;
 
@@ -165,7 +210,7 @@ parameter_declaration { vector<Node*>* vec = new vector<Node*>; vec->push_back($
 ;
 
 parameter_declaration :  
-type IDENT   { $$ = new _Variable($1, $2); }// Type declaration
+type IDENT   { $$ = new _Variable( variableType($1), $2); }// Type declaration
 ;
 
 instruction :  
@@ -198,7 +243,7 @@ IDENT ASSIGN expression  { $$ = new NAssign($1, $3); }
 compound_instruction :  
 block_start declaration_list instruction_list block_end //{$$=$3;}
 | block_start declaration_list block_end 
-| block_start instruction_list block_end {vector<Node*>* vec = new vector<Node*>; vec->push_back($2); $$ = new NInstruction(T_COMPOUND, *vec);}
+| block_start instruction_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);}
 | block_start block_end  { $$ = new NInstruction(T_COMPOUND); }
 ;
 
@@ -206,7 +251,7 @@ block_start declaration_list instruction_list block_end //{$$=$3;}
 block_start :  
 '{'  // Init your hash table _ symbol table
 {
-	symbolTable.push_back( new hash_map<string, int[3]> );
+	symbolTable.push_back( new unordered_map<string, int> );
 }
 
 ;
@@ -294,7 +339,7 @@ RETURN expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($
 ;
 
 condition :  
-expression comparison_operator expression { $$ = new NCondition($2, $1, $3); }
+expression comparison_operator expression { $$ = new NCondition( comparisonOP($2), $1, $3); }
 ;
 
 comparison_operator :  
@@ -307,7 +352,10 @@ EGAL   { $$ = T_EGAL;}
 ;
 
 expression :  
-expression_additive { $$=$1; $$->code();}
+expression_additive { 
+	$$=$1; 
+	//$$->code();
+}
 | expression SHIFTLEFT expression_additive { $$ = new NBinaryOp(T_SHIFTLEFT, $1, $3); }
 | expression SHIFTRIGHT expression_additive { $$ = new NBinaryOp(T_SHIFTRIGHT, $1, $3); }
 ;
@@ -345,9 +393,11 @@ primary_expression :
 IDENT  
 { 
 	int type;
-	type = cheackID($1->getString());
+	
+	type = checkID($1->getString());
 	if(type==-1)
-		yyerror("No declaration");
+		cout<<"No declaration"<<endl;
+	
 	$$=$1; 
 }
 | CONST_INT		{ $$=$1; }
@@ -366,5 +416,10 @@ int yyerror(const char* msg)
 
 int main()
 {
+	unordered_map<string, int>* table_glb = new unordered_map<string, int>;
+	unordered_map<string, int>* table_ertern = new unordered_map<string, int>;
+	symbolTable.push_back(table_ertern);
+	symbolTable.push_back(table_glb);
+
 	yyparse();
 }

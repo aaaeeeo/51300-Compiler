@@ -4,9 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <ext/hash_map>
+#include <unordered_map>
 using namespace std;
-using namespace __gnu_cxx;
 
 enum instrucationType {T_COMPOUND, T_EXPRESSION, T_DOITERATION, T_WHILEITERATION, T_FORITERATION, T_SELECT, T_JUMP};
 enum variableType {T_INT, T_STRING};
@@ -142,7 +141,7 @@ public:
 class NVarDeclaration : public NInstruction
 {
 public:
-    Node* name;
+    Node* name; //NIdentifier
     bool isfun;
     vector<Node*> paraList; //_Variable
 
@@ -158,6 +157,10 @@ public:
     virtual int getInt()
     {
     	return isfun;
+    }
+    virtual string getString()
+    {
+        return ((NIdentifier*) name)->getString();
     }
 };
 
@@ -232,7 +235,9 @@ public:
     Node* leftExp;
     Node* rightExp;
 
-    NCondition(){}
+    NCondition( comparisonOP operation, Node* leftExp, Node* rightExp ):
+    operation(operation), leftExp(leftExp), rightExp(rightExp)
+    {}
     virtual void code()
     {
         cout<<"NCondition"<<endl;
