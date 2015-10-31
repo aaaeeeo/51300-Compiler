@@ -12,29 +12,6 @@ int count;
 int i,j,flag;
 
 
-///////C string replace function found on the internet///////////
-int ReplaceStr(char *sSrc, char *sMatchStr, char *sReplaceStr)
-{
-        int  StringLen;
-        char caNewString[MAX];
-        char *FindPos = strstr(sSrc, sMatchStr);
-        if( (!FindPos) || (!sMatchStr) )
-                return -1;
-        while( FindPos )
-        {
-                memset(caNewString, 0, sizeof(caNewString));
-                StringLen = FindPos - sSrc;
-                strncpy(caNewString, sSrc, StringLen);
-                strcat(caNewString, sReplaceStr);
-                strcat(caNewString, FindPos + strlen(sMatchStr));
-                strcpy(sSrc, caNewString);
-                FindPos = strstr(sSrc, sMatchStr);
-
-        }
-        return 0;
-}
-////////////////////////////////////////////////////////////////
-
 %}
 
 spaces (" ")+
