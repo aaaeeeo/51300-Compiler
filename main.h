@@ -109,10 +109,19 @@ class _Variable : public Node
 {
 public:
     variableType type;
-    Node* id;
+    Node* id;   //NIdentifier
     _Variable(variableType type, Node* id):
     type(type), id(id)
     {}
+    virtual string getString()
+    {
+        return id->getString();
+    }
+    virtual int getInt()
+    {
+        return type;
+    }
+
 };
 
 class NDeclaration : public NInstruction
@@ -161,6 +170,10 @@ public:
     virtual string getString()
     {
         return ((NIdentifier*) name)->getString();
+    }
+    virtual vector<Node*> getList()
+    {
+        return paraList;
     }
 };
 

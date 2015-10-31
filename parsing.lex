@@ -14,6 +14,7 @@ int parsing(char* name);
 
 %}
 
+%option yylineno
 
 %%
 IF|if		return IF;

@@ -2,10 +2,13 @@
 #include "main.h"
 using namespace std;
 
+
+
 extern "C"
 {
 	int yyerror(const char *s);
 	extern int yylex(void);
+	extern int yylineno;
 }
 
 // 0 for int
@@ -13,9 +16,10 @@ extern "C"
 // 2 for int function 
 // 3 for string function
 vector< unordered_map<string, int>* > symbolTable;
+unordered_map<string, int>* temp_tb;
 
 
-int checkID(string id)
+int check_str(string id)
 {
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
@@ -29,11 +33,42 @@ int checkID(string id)
 	return -1;
 }
 
+void check_ID(Node* node)
+{
+	int type;
+	type = check_str(node->getString());
+	if(type==-1)
+	{
+		string temp;
+		temp = "No declaration for " + node->getString();
+		yyerror(temp.c_str());
+	}
+}
+
+void save_symbol(unordered_map<string, int>* table, string name, int type)
+{
+	string temp = "Redeclaration for " + name;
+	if(table->find(name)!=table->end()) 
+        yyerror(temp.c_str());
+	else
+		(*table)[name] = type;
+}
+
 void print_table( unordered_map<string, int>* tb)
 {
-	cout<<"------------Symbol Table--------------"<<endl;
+	//cout<<"------------Symbol Table--------------"<<endl;
 	for ( auto it = tb->begin(); it != tb->end(); it++ )
-    	cout << it->first << "\t" << it->second<<endl;
+    {	cout << it->first << "\t" ;
+    	int type= it->second;
+    	if(type==0)
+    		cout<<"int"<<endl;
+    	else if(type==1)
+    		cout<<"string"<<endl;
+    	else if(type==2)
+    		cout<<"function, int"<<endl;
+    	else if(type==3)
+    		cout<<"function, string"<<endl;
+    }
 }
 
 %}
@@ -108,11 +143,8 @@ declaration 	// Declaration Global
 		{
 			type+=2;
 		}
-		cout<<"GLB ID:"<<name<<","<<type<<endl;
-		if(table->find(name)!=table->end()) 
-        	yyerror("Redeclaration!");
-		else
-			(*table)[name] = type;
+		//cout<<"GLB ID:"<<name<<","<<type<<endl;
+		save_symbol(table,name,type);
 	}
 }			
 | EXTERN declaration // Set Extern attribute	
@@ -130,31 +162,68 @@ declaration 	// Declaration Global
 		{
 			type+=2;
 		}
-		cout<<"extern ID:"<<name<<","<<type<<endl;
-		if(table->find(name)!=table->end()) 
-        	yyerror("Redeclaration!");
-		else
-			(*table)[name] = type;
+		//cout<<"extern ID:"<<name<<","<<type<<endl;
+		save_symbol(table,name,type);
 	}
 }		
-| function_definition { $$ = $1; }
+| function_definition { 
+	$$ = $1; 
+
+	cout<<"-------Extern Symbol Table--------"<<endl;
+	print_table(symbolTable.at(0));
+	cout<<"-------Global Symbol Table--------"<<endl;
+	print_table(symbolTable.at(1));
+	 }
 ;
 
 function_definition :  
-type function_declarator decl_glb_fct compound_instruction { 
+type function_declarator {
+	//store function
+	unordered_map<string, int>* table = symbolTable.back();
+	string funname = $2->getString();
+	(*table)[funname]=($1+2);
+
+
+	//store parameters
+	temp_tb = new unordered_map<string,int>;
+	vector<Node*> list = $2->getList();
+
+	for(int i=0; i<list.size(); i++)
+	{
+		string name = list.at(i)->getString();
+		int type = list.at(i)->getInt();
+		
+		if(list.at(i)->getInt()==1)
+		{
+			type+=2;
+		}
+		//cout<<"para ID:"<<name<<","<<type<<endl;
+		save_symbol(temp_tb,name,type);
+		
+	} 
+}
+	compound_instruction { 
 	vector<Node*>* vec1 = new vector<Node*>; 
 	vec1->push_back($2); 	
 	Node* dec = new NDeclaration(variableType($1), *vec1);
 	vector<Node*>* vec2 = new vector<Node*>;
 	vec2->push_back(dec);
 	vec2->push_back($4);
-	$$ = new NInstruction(T_FUNCTION, *vec2); }// generate code function
+	$$ = new NInstruction(T_FUNCTION, *vec2); 
+
+
+	}// generate code function
   
 ;
 
+/*
 decl_glb_fct :
 // Get function name _ Create a spot to store the function _ set attributes
-;
+{
+	
+
+}
+;*/
 
 declaration :  
 type declarator_list ';' { $$ = new NDeclaration(variableType($1), *$2); }
@@ -186,11 +255,8 @@ declaration 				// Set locals
 		{
 			type+=2;
 		}
-		cout<<"LOCAL ID:"<<name<<","<<type<<endl;
-		if(table->find(name)!=table->end()) 
-        	yyerror("Redeclaration!");
-		else
-			(*table)[name] = type;
+		//cout<<"LOCAL ID:"<<name<<","<<type<<endl;
+		save_symbol(table,name,type);
 	}
 }
 | declaration_list declaration  	// Set locals
@@ -208,11 +274,8 @@ declaration 				// Set locals
 		{
 			type+=2;
 		}
-		cout<<"LOCAL ID:"<<name<<","<<type<<endl;
-		if(table->find(name)!=table->end()) 
-        	yyerror("Redeclaration!");
-		else
-			(*table)[name] = type;
+		//cout<<"LOCAL ID:"<<name<<","<<type<<endl;
+		save_symbol(table,name,type);
 	}
 }
 ;
@@ -260,7 +323,11 @@ expression ';' { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ 
 ;
 
 assignment :  
-IDENT ASSIGN expression  { $$ = new NAssign($1, $3); }
+IDENT ASSIGN expression  { 
+	$$ = new NAssign($1, $3); 
+
+	check_ID($1);
+}
 ;
 
 compound_instruction :  
@@ -278,7 +345,23 @@ block_start declaration_list instruction_list block_end {
 block_start :  
 '{'  // Init your hash table _ symbol table
 {
-	symbolTable.push_back( new unordered_map<string, int> );
+	unordered_map<string, int>* table = new unordered_map<string, int>;
+
+
+	if(temp_tb!=NULL && temp_tb->size()>0)
+	{
+		for ( auto it = temp_tb->begin(); it != temp_tb->end(); it++ )
+    	{
+    		(*table)[it->first] = it->second;	
+    	}
+	}
+	
+
+	symbolTable.push_back( table );
+
+	if(temp_tb!=NULL)
+		temp_tb->clear();
+
 }
 
 ;
@@ -286,6 +369,8 @@ block_start :
 block_end :  
 '}' // Empty hash table
 {
+	cout<<"-------Local Symbol Table--------"<<endl;
+	print_table(symbolTable.back());
 	delete( symbolTable.back() );
 	symbolTable.pop_back();
 }
@@ -407,8 +492,16 @@ expression_postfixee { $$=$1;}
 
 expression_postfixee :  
 primary_expression {$$=$1;}
-| IDENT '(' argument_expression_list')' { $$=new NFunctionCall($1, *$3); }
-| IDENT '(' ')' { $$=new NFunctionCall($1); }
+| IDENT '(' argument_expression_list')' { 
+	$$=new NFunctionCall($1, *$3); 
+
+	check_ID($1);
+}
+| IDENT '(' ')' { 
+	$$=new NFunctionCall($1); 
+
+	check_ID($1);
+}
 ;
 
 argument_expression_list:  
@@ -419,11 +512,7 @@ expression 	{ $$=new vector<Node*>; $$->push_back($1); }
 primary_expression :  
 IDENT  
 { 
-	int type;
-	
-	type = checkID($1->getString());
-	if(type==-1)
-		yyerror("No declaration");
+	check_ID($1);
 	
 	$$=$1; 
 }
@@ -438,7 +527,7 @@ IDENT
 
 int yyerror(const char* msg)
 {
-	cout<<"ERROR: "<<msg<<endl;
+	cout<<"ERROR: line "<<yylineno<<": "<<msg<<endl;
 }
 
 int main()
