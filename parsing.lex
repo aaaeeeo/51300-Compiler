@@ -29,7 +29,11 @@ EXTERN|extern   return EXTERN;
 
 [A-Za-z\_][A-Za-z\_0-9]*	{
 if(yyleng>31)
-	yyerror(yytext);
+{
+	string str="identifier too long: ";
+	str+=yytext;
+	yyerror(str.c_str());
+}
 else
 	{ 
 		string  str(yytext); 
@@ -81,7 +85,11 @@ else
 \n 		;
 \t 		;
 " "		;
-.		yyerror(yytext);
+.		{
+	string str="unknown token: ";
+	str+=yytext;
+	yyerror(str.c_str());
+}
 
 %%
 

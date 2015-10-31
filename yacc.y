@@ -80,7 +80,18 @@ void print_table( unordered_map<string, int>* tb)
 
 void check_type( Node* a, Node *b)
 {
-	//while()
+	while( dynamic_cast <NIdentifier*> (a) == NULL && dynamic_cast <NInt*> (a) == NULL && dynamic_cast <NString*> (a) == NULL)
+		a=a->getNode();
+	while( dynamic_cast <NIdentifier*> (b) == NULL && dynamic_cast <NInt*> (b) == NULL && dynamic_cast <NString*> (b) == NULL)
+		b=b->getNode();
+	if(a->getInt() != b->getInt())
+	{
+		string str="Type dismatch with " ;
+		str+=(a->getInt()==0 ? "int" : "string");
+		str+=" and ";
+		str+=(b->getInt()==0 ? "int" : "string");
+		yyerror(str.c_str());
+	}
 }
 
 %}
@@ -181,9 +192,9 @@ declaration 	// Declaration Global
 | function_definition { 
 	$$ = $1; 
 
-	cout<<"-------Extern Symbol Table--------"<<endl;
+	cout<<endl<<"-------Extern Symbol Table--------"<<endl;
 	print_table(symbolTable.at(0));
-	cout<<"-------Global Symbol Table--------"<<endl;
+	cout<<endl<<"-------Global Symbol Table--------"<<endl;
 	print_table(symbolTable.at(1));
 	 }
 ;
@@ -383,7 +394,7 @@ block_start :
 block_end :  
 '}' // Empty hash table
 {
-	cout<<"-------Local Symbol Table--------"<<endl;
+	cout<<endl<<"-------Local Symbol Table--------"<<endl;
 	print_table(symbolTable.back());
 	delete( symbolTable.back() );
 	symbolTable.pop_back();
@@ -482,21 +493,21 @@ expression_additive {
 	$$=$1; 
 	//$$->code();
 }
-| expression SHIFTLEFT expression_additive { $$ = new NBinaryOp(T_SHIFTLEFT, $1, $3); }
-| expression SHIFTRIGHT expression_additive { $$ = new NBinaryOp(T_SHIFTRIGHT, $1, $3); }
+| expression SHIFTLEFT expression_additive { $$ = new NBinaryOp(T_SHIFTLEFT, $1, $3); check_type($1,$3);}
+| expression SHIFTRIGHT expression_additive { $$ = new NBinaryOp(T_SHIFTRIGHT, $1, $3); check_type($1,$3);}
 ;
 
 expression_additive :  
 expression_multiplicative { $$=$1;}
-| expression_additive PLUS expression_multiplicative { $$ = new NBinaryOp(T_PLUS, $1, $3); }
-| expression_additive MINUS expression_multiplicative { $$ = new NBinaryOp(T_MINUS, $1, $3); }
+| expression_additive PLUS expression_multiplicative { $$ = new NBinaryOp(T_PLUS, $1, $3); check_type($1,$3);}
+| expression_additive MINUS expression_multiplicative { $$ = new NBinaryOp(T_MINUS, $1, $3); check_type($1,$3);}
 ;
 
 expression_multiplicative :  
 unary_expression { $$=$1;}
-| expression_multiplicative MULTI unary_expression { $$ = new NBinaryOp(T_MULTI, $1, $3); }
-| expression_multiplicative DIV unary_expression { $$ = new NBinaryOp(T_DIV, $1, $3); }
-| expression_multiplicative MODULO unary_expression { $$ = new NBinaryOp(T_MODULE, $1, $3); }
+| expression_multiplicative MULTI unary_expression { $$ = new NBinaryOp(T_MULTI, $1, $3); check_type($1,$3);}
+| expression_multiplicative DIV unary_expression { $$ = new NBinaryOp(T_DIV, $1, $3); check_type($1,$3);}
+| expression_multiplicative MODULO unary_expression { $$ = new NBinaryOp(T_MODULE, $1, $3); check_type($1,$3);}
 ;
 
 unary_expression:  
@@ -551,9 +562,11 @@ int main()
 	symbolTable.push_back(table_ertern);
 	symbolTable.push_back(table_glb);
 
-	yyparse();
-
-	root->code();
+	if(yyparse()==0)
+	{
+		cout<<endl<<"--------ABSTRACT TREE--------"<<endl;
+		root->code();
+}
 
 
 }

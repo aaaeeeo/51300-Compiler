@@ -30,7 +30,8 @@ public:
     {}
     virtual vector<Node*> getList()
     {}
-
+    virtual Node* getNode()
+    {}
     virtual void setInt(int)
     {}
 
@@ -97,6 +98,10 @@ public:
     {
         cout<<"NInt: "<<value<<endl;
     }
+    virtual int getInt()
+    {
+        return 0;
+    }
 };
 
 class NString : public NExpression
@@ -108,6 +113,10 @@ public:
     virtual void code()
     {
         cout<<"NString: "<<value<<endl;
+    }
+    virtual int getInt()
+    {
+        return 1;
     }
 };
 
@@ -230,6 +239,10 @@ public:
         cout<<"NUnaryOp: - ";
         childExp->code();
     }
+    virtual Node* getNode()
+    {
+        return childExp;
+    }
 };
 
 class NBinaryOp : public NExpression
@@ -265,9 +278,10 @@ public:
 
         cout<<" ";
         rightExp->code();
-
-
-
+    }
+    virtual Node* getNode()
+    {
+        return leftExp;
     }
 };
 
@@ -285,6 +299,10 @@ public:
     virtual void code()
     {
         cout<<"NFunctionCall: name:"<<funcationName->getString()<<endl;
+    }
+    virtual Node* getNode()
+    {
+        return funcationName;
     }
 };
 
