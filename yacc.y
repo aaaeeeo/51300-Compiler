@@ -17,6 +17,7 @@ extern "C"
 // 3 for string function
 vector< unordered_map<string, int>* > symbolTable;
 unordered_map<string, int>* temp_tb;
+Node* root;
 
 
 int check_str(string id)
@@ -42,6 +43,12 @@ void check_ID(Node* node)
 		string temp;
 		temp = "No declaration for " + node->getString();
 		yyerror(temp.c_str());
+	}
+	else
+	{
+		if(type>1)
+			type-=2;
+		node->setInt(type);
 	}
 }
 
@@ -69,6 +76,11 @@ void print_table( unordered_map<string, int>* tb)
     	else if(type==3)
     		cout<<"function, string"<<endl;
     }
+}
+
+void check_type( Node* a, Node *b)
+{
+	//while()
 }
 
 %}
@@ -122,7 +134,7 @@ void print_table( unordered_map<string, int>* tb)
 
 
 program :  
-external_declaration { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = new NInstruction(T_PROGRAM, *vec); }
+external_declaration { vector<Node*>* vec = new vector<Node*>; vec->push_back($1); $$ = new NInstruction(T_PROGRAM, *vec); root = $$; }
 | program external_declaration {( (NInstruction*)$1)->instructionList.push_back($2); }
 ;
 
@@ -327,6 +339,8 @@ IDENT ASSIGN expression  {
 	$$ = new NAssign($1, $3); 
 
 	check_ID($1);
+
+	check_type($1, $3);
 }
 ;
 
@@ -538,4 +552,8 @@ int main()
 	symbolTable.push_back(table_glb);
 
 	yyparse();
+
+	root->code();
+
+
 }

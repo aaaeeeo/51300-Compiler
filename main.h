@@ -14,6 +14,8 @@ enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRI
 enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 
 
+
+
 class Node
 {
 public:
@@ -27,6 +29,9 @@ public:
     virtual int getInt()
     {}
     virtual vector<Node*> getList()
+    {}
+
+    virtual void setInt(int)
     {}
 
 };
@@ -56,7 +61,29 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NInstruction\n";
+        cout<<"NInstruction: type:";
+        if(type==0)
+            cout<<"T_PROGRAM"<<endl;
+        if(type==1)
+            cout<<"T_FUNCTION"<<endl;
+        if(type==2)
+            cout<<"T_COMPOUND"<<endl;
+        if(type==3)
+            cout<<"T_EXPRESSION"<<endl;
+        if(type==4)
+            cout<<"T_DOITERATION"<<endl;
+        if(type==5)
+            cout<<"T_WHILEITERATION"<<endl;
+        if(type==6)
+            cout<<"T_FORITERATION"<<endl;
+        if(type==7)
+            cout<<"T_SELECT"<<endl;
+        if(type==8)
+            cout<<"T_JUMP"<<endl;
+        for( auto it = instructionList.begin(); it != instructionList.end(); it++)
+        {
+            (*it)->code();
+        }
     }
 };
 
@@ -93,7 +120,7 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        cout<<"NIdentifier: "<<id<<endl;
+        cout<<"NIdentifier: "<<id;
     }
     virtual string getString()
     {
@@ -102,6 +129,10 @@ public:
     virtual int getInt()
     {
     	return type;
+    }
+    virtual void setInt(int t)
+    {
+        type=(variableType)t;
     }
 };
 
@@ -113,6 +144,10 @@ public:
     _Variable(variableType type, Node* id):
     type(type), id(id)
     {}
+    virtual void code()
+    {
+        cout<<"_Variable: name: "<<id<<"type: "<<( type==0 ? "int" : "string" )<<endl;
+    }
     virtual string getString()
     {
         return id->getString();
@@ -135,7 +170,11 @@ public:
 
     virtual void code()
     {
-        cout<<"NDeclaration"<<endl;
+        cout<<"NDeclaration: type:"<<( type==0 ? "int" : "string" )<<endl;
+        for( auto it = declList.begin(); it != declList.end(); it++)
+        {
+            (*it)->code();
+        }
     }
     virtual vector<Node*> getList()
     {
@@ -161,7 +200,7 @@ public:
 
     virtual void code()
     {
-        cout<<"NVarDeclaration"<<endl;
+        cout<<"NVarDeclaration: "<<( isfun==1 ? "function " : "" )<<"name: "<<name->getString()<<endl;
     }
     virtual int getInt()
     {
@@ -188,7 +227,8 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NUnaryOp"<<endl;
+        cout<<"NUnaryOp: - ";
+        childExp->code();
     }
 };
 
@@ -204,9 +244,30 @@ public:
     {}
     virtual void code()
     {
-        cout<<"**NBinaryOp**\n";
+        cout<<"NBinaryOp: ";
         leftExp->code();
+        cout<<" ";
+
+        if(operation==0)
+            cout<<"T_PLUS";
+        if(operation==1)
+            cout<<"T_MINUS";
+        if(operation==2)
+            cout<<"T_MULTI";
+        if(operation==3)
+            cout<<"T_DIV";
+        if(operation==4)
+            cout<<"T_MODULE";
+        if(operation==5)
+            cout<<"T_SHIFTLEFT";
+        if(operation==6)
+            cout<<"T_SHIFTRIGHT";
+
+        cout<<" ";
         rightExp->code();
+
+
+
     }
 };
 
@@ -223,7 +284,7 @@ public:
     funcationName(name) {}
     virtual void code()
     {
-        cout<<"NFunctionCall"<<endl;
+        cout<<"NFunctionCall: name:"<<funcationName->getString()<<endl;
     }
 };
 
@@ -236,7 +297,9 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        cout<<"NAssign"<<endl;
+        cout<<"NAssign: "<<id->getString()<<" = ";
+        exp->code();
+
     }
 };
 
@@ -253,7 +316,26 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NCondition"<<endl;
+        cout<<"NCondition: ";
+        leftExp->code();
+        cout<<" ";
+
+        if(operation==0)
+            cout<<"T_EGAL";
+        if(operation==1)
+            cout<<"T_SUP";
+        if(operation==2)
+            cout<<"T_INF";
+        if(operation==3)
+            cout<<"T_INFEQUAL";
+        if(operation==4)
+            cout<<"T_SUPEQUAL";
+        if(operation==5)
+            cout<<"T_DIFF";
+
+        cout<<" ";
+        rightExp->code();
+        cout<<endl;
     }
 };
 
