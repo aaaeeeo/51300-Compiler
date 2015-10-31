@@ -80,9 +80,13 @@ void print_table( unordered_map<string, int>* tb)
 
 void check_type( Node* a, Node *b)
 {
-	while( dynamic_cast <NIdentifier*> (a) == NULL && dynamic_cast <NInt*> (a) == NULL && dynamic_cast <NString*> (a) == NULL)
+	while( dynamic_cast <NIdentifier*> (a) == NULL && 
+		dynamic_cast <NInt*> (a) == NULL && 
+		dynamic_cast <NString*> (a) == NULL)
 		a=a->getNode();
-	while( dynamic_cast <NIdentifier*> (b) == NULL && dynamic_cast <NInt*> (b) == NULL && dynamic_cast <NString*> (b) == NULL)
+	while( dynamic_cast <NIdentifier*> (b) == NULL && 
+		dynamic_cast <NInt*> (b) == NULL && 
+		dynamic_cast <NString*> (b) == NULL)
 		b=b->getNode();
 	if(a->getInt() != b->getInt())
 	{
