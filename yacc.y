@@ -11,8 +11,8 @@ extern "C"
 	extern int yylineno;
 }
 
-// 0 for int
-// 1 for string
+// positive value for int
+// negative value for string
 // 2 for int function 
 // 3 for string function
 vector< unordered_map<string, int>* > symbolTable;
@@ -57,8 +57,9 @@ void save_symbol(unordered_map<string, int>* table, string name, int type)
 	string temp = "Redeclaration for " + name;
 	if(table->find(name)!=table->end()) 
         yyerror(temp.c_str());
-	else
-		(*table)[name] = type;
+	else{
+            (*table)[name] = type;
+        }		
 }
 
 void print_table( unordered_map<string, int>* tb)
