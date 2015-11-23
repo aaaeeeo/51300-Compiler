@@ -66,7 +66,6 @@ void save_symbol(unordered_map<string, int>* table, string name, int type)
 	string temp = "Redeclaration for " + name;
 	if(table->find(name)!=table->end()) 
         yyerror(temp.c_str());
-<<<<<<< HEAD
 	else
 	{
 		int size = (*table)["0"];
@@ -90,11 +89,6 @@ void save_symbol(unordered_map<string, int>* table, string name, int type)
 void init_table(unordered_map<string, int>* table)
 {
 	(*table)["0"]=0;
-=======
-	else{
-            (*table)[name] = type;
-        }		
->>>>>>> 2f4189d10a06eb4dce22b6aa5ad483cc9d25dd52
 }
 
 void print_table( unordered_map<string, int>* tb)

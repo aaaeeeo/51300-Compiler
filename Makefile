@@ -1,22 +1,24 @@
 LEX=flex
 YACC=bison
 CC=g++
+PP=cpp
 OBJECT=main
 INTERN=code
+SOURCE=test.c
 
 final: $(INTERN) $(OBJECT)
 	@./$(OBJECT) < $(INTERN)
 
-$(INTERN): preprocessing
-	@./preprocessing < test.c > $(INTERN)
+$(INTERN): preprocessing $(SOURCE)
+	$(PP) $(SOURCE) > $(INTERN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o main.o -o $(OBJECT)
 
 lex.yy.o: lex.yy.c  yacc.tab.h  main.h
-	$(CC) -c lex.yy.c main.cpp -std=c++11
+	$(CC) -c lex.yy.c -std=c++11
 
-yacc.tab.o: yacc.tab.c  main.h
+yacc.tab.o: yacc.tab.c  main.h main.cpp
 	$(CC) -c yacc.tab.c main.cpp -std=c++11
 
 yacc.tab.c  yacc.tab.h: yacc.y 

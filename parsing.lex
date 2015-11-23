@@ -17,6 +17,11 @@ int parsing(char* name);
 %option yylineno
 
 %%
+
+^\#[^\n]*\n 	{
+	
+}
+
 IF|if		return IF;
 ELSE|else	return ELSE;
 WHILE|while     return WHILE;
