@@ -11,8 +11,9 @@ extern "C"
 	extern int yylineno;
 }
 
-// 0 for int
-// 1 for string
+// key-0 totall offsets
+// +offset for int
+// -offset for string
 // 2 for int function 
 // 3 for string function
 vector< unordered_map<string, int>* > symbolTable;
@@ -46,9 +47,16 @@ void check_ID(Node* node)
 	}
 	else
 	{
-		if(type>1)
-			type-=2;
-		node->setInt(type);
+		if(type==2||type==3)
+			node->setInt(type);
+		else
+		{
+			node->setOffset(type);
+			if(type>0)
+				node->setInt(0);
+			else
+				node->setInt(1);
+		}
 	}
 }
 
@@ -58,7 +66,28 @@ void save_symbol(unordered_map<string, int>* table, string name, int type)
 	if(table->find(name)!=table->end()) 
         yyerror(temp.c_str());
 	else
-		(*table)[name] = type;
+	{
+		int size = (*table)["0"];
+		if(type==0)
+		{
+			size+=4;
+			(*table)["0"] = size;
+			(*table)[name] = size;
+		}
+		else if(type==1)
+		{
+			size+=128;
+			(*table)["0"] = size;
+			(*table)[name] = size;
+		}
+		else
+			(*table)[name] = type;
+	}
+}
+
+void init_table(unordered_map<string, int>* table)
+{
+	(*table)["0"]=0;
 }
 
 void print_table( unordered_map<string, int>* tb)
@@ -375,6 +404,7 @@ block_start :
 '{'  // Init your hash table _ symbol table
 {
 	unordered_map<string, int>* table = new unordered_map<string, int>;
+	init_table(table);
 
 
 	if(temp_tb!=NULL && temp_tb->size()>0)
@@ -563,6 +593,8 @@ int main()
 {
 	unordered_map<string, int>* table_glb = new unordered_map<string, int>;
 	unordered_map<string, int>* table_ertern = new unordered_map<string, int>;
+	init_table(table_glb);
+	init_table(table_ertern);
 	symbolTable.push_back(table_ertern);
 	symbolTable.push_back(table_glb);
 

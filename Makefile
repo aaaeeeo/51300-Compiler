@@ -8,7 +8,7 @@ final: $(INTERN) $(OBJECT)
 	@./$(OBJECT) < $(INTERN)
 
 $(INTERN): preprocessing
-	@./preprocessing < COMPILER_EXAMPLE/test/cond.c > $(INTERN)
+	@./preprocessing < file1.c > $(INTERN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o -o $(OBJECT)

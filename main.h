@@ -14,8 +14,6 @@ enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRI
 enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 
 
-
-
 class Node
 {
 public:
@@ -33,6 +31,12 @@ public:
     virtual Node* getNode()
     {}
     virtual void setInt(int)
+    {}
+    virtual string getNodeType()
+    {}
+    virtual int getValue()
+    {}
+     virtual void setOffset(int o)
     {}
 
 };
@@ -96,11 +100,20 @@ public:
     NInt(int value): value(value) {}
     virtual void code()
     {
-        cout<<"NInt: "<<value<<endl;
+        //cout<<"NInt: "<<value<<endl;
+        cout<<"movl $"<<value<<", %eax"<<endl;
     }
     virtual int getInt()
     {
         return 0;
+    }
+    virtual string getNodeType()
+    {
+        return "NInt";
+    }
+    virtual int getValue()
+    {
+        return value;
     }
 };
 
@@ -118,6 +131,10 @@ public:
     {
         return 1;
     }
+    virtual string getNodeType()
+    {
+        return "NString";
+    }
 };
 
 class NIdentifier : public NExpression
@@ -125,11 +142,14 @@ class NIdentifier : public NExpression
 public:
     string id;
     variableType type;
+    int offset;
 
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        cout<<"NIdentifier: "<<id;
+        //cout<<"NIdentifier: "<<id;
+
+        cout<<"movl -"<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
     {
@@ -142,6 +162,12 @@ public:
     virtual void setInt(int t)
     {
         type=(variableType)t;
+    }
+    virtual void setOffset(int o)
+    {
+        if(o<0)
+            o=-o;
+        offset=o;
     }
 };
 
@@ -257,9 +283,7 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NBinaryOp: ";
-        leftExp->code();
-        cout<<" ";
+        cout<<"\n\nNBinaryOp: ";
 
         if(operation==0)
             cout<<"T_PLUS";
@@ -275,14 +299,71 @@ public:
             cout<<"T_SHIFTLEFT";
         if(operation==6)
             cout<<"T_SHIFTRIGHT";
+        cout<<"\n";
 
-        cout<<" ";
-        rightExp->code();
+        if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
+        {
+            int re;
+            if(operation==0)
+                re=leftExp->getValue()+rightExp->getValue();
+            if(operation==1)
+                re=leftExp->getValue()-rightExp->getValue();
+            if(operation==2)
+                re=leftExp->getValue()*rightExp->getValue();
+            if(operation==3)
+                re=leftExp->getValue()/rightExp->getValue();
+            if(operation==4)
+                re=leftExp->getValue()%rightExp->getValue();
+            if(operation==5)
+                re=leftExp->getValue()<<rightExp->getValue();
+            if(operation==6)
+                re=leftExp->getValue()>>rightExp->getValue();
+            cout<<"movl $"<<re<<", %eax"<<endl;
+        }
+        else
+        {
+            leftExp->code();
+            cout<<"push %eax\n";
+            rightExp->code();
+            cout<<"push %eax\n";
+            cout<<"pop %ebx\npop %eax\n";
+            if(operation==0)
+                cout<<"addl %ebx, %eax"<<endl;
+            if(operation==1)
+                cout<<"subl %ebx, %eax"<<endl;
+            if(operation==2)
+                cout<<"imull %ebx, %eax"<<endl;
+            if(operation==3)
+            {
+                cout<<"cltd\n";
+                cout<<"idivl %ebx"<<endl;
+            }
+            if(operation==4)
+            {
+                cout<<"cltd\n";
+                cout<<"idivl %ebx"<<endl;
+                cout<<"movl %edx,%eax\n";
+            }
+            if(operation==5)
+            {
+                cout<<"sall %bl, %ea\n";
+            }
+            if(operation==6)
+            {
+                cout<<"sarl %bl, %ea\n";
+            }
+        }
+
     }
     virtual Node* getNode()
     {
         return leftExp;
     }
+    virtual string getNodeType()
+    {
+        return "NBinaryOp";
+    }
+
 };
 
 class NFunctionCall : public NExpression
