@@ -13,17 +13,21 @@ enum unaryOP { T_NEGATIVE};
 enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRIGHT};
 enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 
-
+extern int labelIn;
+extern int labelOut;
 
 
 class Node
 {
 public:
+	
     Node(){}
+	
     virtual void code()
     {
         cout<<"Node\n";
     }
+	
     virtual string getString()
     {}
     virtual int getInt()
@@ -37,17 +41,19 @@ public:
 
 };
 
-
 class NExpression : public Node
 {
 public:
     NExpression(){}
     virtual void code()
     {
-        cout<<"NExpression\n";
+        //cout<<"NExpression\n";
     }
 };
 
+//==============================================
+//               Instruction
+//==============================================
 class NInstruction : public Node
 {
 public:
@@ -63,31 +69,61 @@ public:
     virtual void code()
     {
         cout<<"NInstruction: type:";
-        if(type==0)
-            cout<<"T_PROGRAM"<<endl;
-        if(type==1)
-            cout<<"T_FUNCTION"<<endl;
-        if(type==2)
-            cout<<"T_COMPOUND"<<endl;
-        if(type==3)
-            cout<<"T_EXPRESSION"<<endl;
-        if(type==4)
-            cout<<"T_DOITERATION"<<endl;
-        if(type==5)
-            cout<<"T_WHILEITERATION"<<endl;
-        if(type==6)
-            cout<<"T_FORITERATION"<<endl;
-        if(type==7)
-            cout<<"T_SELECT"<<endl;
-        if(type==8)
-            cout<<"T_JUMP"<<endl;
-        for( auto it = instructionList.begin(); it != instructionList.end(); it++)
-        {
+        if(type==0){
+			cout<<"T_PROGRAM"<<endl;
+		    printList();
+		}
+        if(type==1){
+			cout<<"T_FUNCTION"<<endl;
+		    printList();
+		}
+        if(type==2){
+			cout<<"T_COMPOUND"<<endl;
+		    printList();
+		}
+        if(type==3){
+		    cout<<"T_EXPRESSION"<<endl;
+			printList();
+		}          
+        if(type==4){
+		    cout<<"T_DOITERATION"<<endl;
+			printList();
+		}        
+        if(type==5){
+		    cout<<"T_WHILEITERATION"<<endl;
+			printList();
+		}         
+        if(type==6){
+		    cout<<"T_FORITERATION"<<endl;
+			printList();
+		}          
+        if(type==7){
+			instructionList.at(0)->code();
+			labelOut++;
+			if(instructionList.size()==3){
+				instructionList.at(2)->code();
+				cout<<"jmp "<<"Out"<<labelOut<<endl;
+			}
+			cout<<"In"<<labelIn<<":"<<endl;
+			instructionList.at(1)->code();
+			cout<<"Out"<<labelOut<<":"<<endl;
+		}//T_SELECT
+        if(type==8){
+		    cout<<"T_JUMP"<<endl;
+			printList();
+		}           
+    }
+	
+	void printList(){
+	    for( auto it = instructionList.begin(); it != instructionList.end(); it++){
             (*it)->code();
         }
-    }
+	}
 };
 
+//===========================================
+//                  Int
+//===========================================
 class NInt : public NExpression
 {
 public:
@@ -104,6 +140,9 @@ public:
     }
 };
 
+//===========================================
+//                 String
+//===========================================
 class NString : public NExpression
 {
 public:
@@ -120,6 +159,9 @@ public:
     }
 };
 
+//========================================
+//              Identifier
+//========================================
 class NIdentifier : public NExpression
 {
 public:
@@ -129,7 +171,7 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        cout<<"NIdentifier: "<<id;
+        //cout<<"NIdentifier: "<<id;
     }
     virtual string getString()
     {
@@ -145,6 +187,9 @@ public:
     }
 };
 
+//========================================
+//            Single Variable
+//========================================
 class _Variable : public Node
 {
 public:
@@ -225,6 +270,9 @@ public:
     }
 };
 
+//=========================================
+//             Unary Operation
+//=========================================
 class NUnaryOp : public NExpression
 {
 public:
@@ -245,6 +293,9 @@ public:
     }
 };
 
+//===========================================
+//            Binary Operation
+//===========================================
 class NBinaryOp : public NExpression
 {
 public:
@@ -285,6 +336,9 @@ public:
     }
 };
 
+//===============================================
+//               Function Call
+//===============================================
 class NFunctionCall : public NExpression
 {
 public:
@@ -306,6 +360,9 @@ public:
     }
 };
 
+//================================================
+//                 Assignment
+//================================================
 class NAssign : public Node
 {
 public:
@@ -321,7 +378,9 @@ public:
     }
 };
 
-
+//===============================================
+//                Condition
+//===============================================
 class NCondition : public Node
 {
 public:
@@ -333,27 +392,30 @@ public:
     operation(operation), leftExp(leftExp), rightExp(rightExp)
     {}
     virtual void code()
-    {
-        cout<<"NCondition: ";
-        leftExp->code();
-        cout<<" ";
+    {	
+		leftExp->code();
+		cout<<"mov %eax, %esi"<<endl;
+		
+		rightExp->code();
+        cout<<"mov %eax, %edi"<<endl;
+		
+		cout<<"cmp %esi, %edi"<<endl;
 
         if(operation==0)
-            cout<<"T_EGAL";
+            cout<<"je ";  //equal
         if(operation==1)
-            cout<<"T_SUP";
+            cout<<"jg ";  //greater than
         if(operation==2)
-            cout<<"T_INF";
+            cout<<"jl ";  //less than
         if(operation==3)
-            cout<<"T_INFEQUAL";
+            cout<<"jle ";  //less or equal 
         if(operation==4)
-            cout<<"T_SUPEQUAL";
+            cout<<"jge ";  //greater or equal
         if(operation==5)
-            cout<<"T_DIFF";
-
-        cout<<" ";
-        rightExp->code();
-        cout<<endl;
+            cout<<"jne ";  //not equal
+		
+		labelIn++;
+		cout<<"In"<<labelIn<<endl;
     }
 };
 
