@@ -8,18 +8,18 @@ final: $(INTERN) $(OBJECT)
 	@./$(OBJECT) < $(INTERN)
 
 $(INTERN): preprocessing
-	@./preprocessing < file1.c > $(INTERN)
+	@./preprocessing < test.c > $(INTERN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
-	$(CC) lex.yy.o yacc.tab.o -o $(OBJECT)
+	$(CC) lex.yy.o yacc.tab.o main.o -o $(OBJECT)
 
 lex.yy.o: lex.yy.c  yacc.tab.h  main.h
-	$(CC) -c lex.yy.c -std=c++11
+	$(CC) -c lex.yy.c main.cpp -std=c++11
 
 yacc.tab.o: yacc.tab.c  main.h
-	$(CC) -c yacc.tab.c -std=c++11
+	$(CC) -c yacc.tab.c main.cpp -std=c++11
 
-yacc.tab.c  yacc.tab.h: yacc.y
+yacc.tab.c  yacc.tab.h: yacc.y 
 	$(YACC) -d -o yacc.tab.c yacc.y
 
 lex.yy.c: parsing.lex
