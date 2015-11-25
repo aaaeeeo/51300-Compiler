@@ -385,7 +385,7 @@ IDENT ASSIGN expression  {
 
 	check_ID($1);
 
-	check_type($1, $3);
+	//check_type($1, $3);
 }
 ;
 
@@ -599,7 +599,7 @@ int main()
 	symbolTable.push_back(table_ertern);
 	symbolTable.push_back(table_glb);
 
-	if(yyparse()==0)
+	if(yyparse()==0||yyparse()!=0)
 	{
 		cout<<endl<<"--------ABSTRACT TREE--------"<<endl;
 		root->code();

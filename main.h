@@ -40,7 +40,9 @@ public:
     virtual void setInt(int)
     {}
     virtual string getNodeType()
-    {}
+    {
+        return "";
+    }
     virtual int getValue()
     {}
     virtual void setOffset(int o)
@@ -81,23 +83,24 @@ public:
 			//cout<<"T_PROGRAM"<<endl;
 		    printList();
 		}//T_PROGRAM
-        if(type==1){
+        else if(type==1){
 			//cout<<"T_FUNCTION"<<endl;
 		    printList();
 		}//T_FUNCTION
-        if(type==2){
+        else if(type==2)
+        {
 			//cout<<"T_COMPOUND"<<endl;
 		    printList();
 		}//T_COMPOUND
-        if(type==3){
+        else if(type==3){
 		    //cout<<"T_EXPRESSION"<<endl;
 			printList();
 		}//T_EXPRESSION          
-        if(type==4){
+        else if(type==4){
 		    //cout<<"T_DOITERATION"<<endl;
 			printList();
 		}//T_DOITERATION        
-        if(type==5){
+        else if(type==5){
 			labelLoop++;
 			cout<<"Loop"<<labelLoop<<":"<<endl;
 			
@@ -110,11 +113,11 @@ public:
 			
 			cout<<"Skip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
-        if(type==6){
+        else if(type==6){
 		    //cout<<"T_FORITERATION"<<endl;
 			printList();
 		}//T_FORITERATION          
-        if(type==7){
+        else if(type==7){
 			instructionList.at(0)->code();
 			labelNo++;
 			cout<<"No"<<labelNo<<endl;
@@ -127,7 +130,7 @@ public:
 			instructionList.at(1)->code();
 			cout<<"Out"<<labelOut<<":"<<endl;
 		}//T_SELECT
-        if(type==8){
+        else if(type==8){
 		    //cout<<"T_JUMP"<<endl;
 			printList();
 		}//T_JUMP           
@@ -227,6 +230,10 @@ public:
     {
         return offset;
     }
+    virtual string getNodeType()
+    {
+        return "NIdentifier";
+    }
 };
 
 //========================================
@@ -283,6 +290,7 @@ public:
     {
     	return type;
     }
+
 };
 
 //==========================================
@@ -357,7 +365,8 @@ public:
     {}
     virtual void code()
     {
-        /*if(operation==0)
+        /*
+        if(operation==0)
             cout<<"T_PLUS";
         if(operation==1)
             cout<<"T_MINUS";
@@ -373,6 +382,7 @@ public:
             cout<<"T_SHIFTRIGHT";
         cout<<"\n";
         */
+        
 
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
