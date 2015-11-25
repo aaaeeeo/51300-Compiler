@@ -366,32 +366,7 @@ public:
     {}
     virtual void code()
     {
-<<<<<<< HEAD
-        /*
-=======
->>>>>>> 3a1e04c5be71af9ba945107e37d2deb17cdad4c9
-        if(operation==0)
-            cout<<"T_PLUS";
-        if(operation==1)
-            cout<<"T_MINUS";
-        if(operation==2)
-            cout<<"T_MULTI";
-        if(operation==3)
-            cout<<"T_DIV";
-        if(operation==4)
-            cout<<"T_MODULE";
-        if(operation==5)
-            cout<<"T_SHIFTLEFT";
-        if(operation==6)
-            cout<<"T_SHIFTRIGHT";
-        cout<<"\n";
-<<<<<<< HEAD
-        */
-        
 
-=======
-        
->>>>>>> 3a1e04c5be71af9ba945107e37d2deb17cdad4c9
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
             int re;
