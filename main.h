@@ -43,7 +43,9 @@ public:
     {}
     virtual int getValue()
     {}
-     virtual void setOffset(int o)
+    virtual void setOffset(int o)
+    {}
+    virtual int getOffset()
     {}
 
 };
@@ -221,6 +223,10 @@ public:
             o=-o;
         offset=o;
     }
+    virtual int getOffset()
+    {
+        return offset;
+    }
 };
 
 //========================================
@@ -313,7 +319,7 @@ public:
 };
 
 //=========================================
-//             Unary Operation
+//             Unary Operation  done
 //=========================================
 class NUnaryOp : public NExpression
 {
@@ -326,8 +332,9 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NUnaryOp: - ";
+        //cout<<"NUnaryOp: - ";
         childExp->code();
+        cout<<"movl %eax, %ebx\nmovl $0, %eax\nsubl %ebx, %eax\n";
     }
     virtual Node* getNode()
     {
@@ -336,7 +343,7 @@ public:
 };
 
 //===========================================
-//            Binary Operation
+//            Binary operation  done
 //===========================================
 class NBinaryOp : public NExpression
 {
@@ -350,7 +357,7 @@ public:
     {}
     virtual void code()
     {
-        if(operation==0)
+        /*if(operation==0)
             cout<<"T_PLUS";
         if(operation==1)
             cout<<"T_MINUS";
@@ -365,6 +372,7 @@ public:
         if(operation==6)
             cout<<"T_SHIFTRIGHT";
         cout<<"\n";
+        */
 
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
@@ -456,7 +464,7 @@ public:
 };
 
 //================================================
-//                 Assignment
+//                 Assignment   done
 //================================================
 class NAssign : public Node
 {
@@ -467,9 +475,10 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        cout<<"NAssign: "<<id->getString()<<" = ";
+        //cout<<"NAssign: "<<id->getString()<<" = ";
         exp->code();
-
+        int offset= id->getOffset();
+        cout<<"movl %eax, -"<<offset<<"(%ebp)\n";
     }
 };
 
