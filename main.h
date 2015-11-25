@@ -17,6 +17,7 @@ extern int labelNo;
 extern int labelOut;
 extern int labelSkip;
 extern int labelLoop;
+extern string cfun;
 
 class Node
 {
@@ -30,13 +31,19 @@ public:
     }
 	
     virtual string getString()
-    {}
+    {
+        return "";
+    }
     virtual int getInt()
-    {}
+    {
+        return -1;
+    }
     virtual vector<Node*> getList()
     {}
     virtual Node* getNode()
-    {}
+    {
+        return NULL;
+    }
     virtual void setInt(int)
     {}
     virtual string getNodeType()
@@ -44,11 +51,15 @@ public:
         return "";
     }
     virtual int getValue()
-    {}
+    {
+        return -1;
+    }
     virtual void setOffset(int o)
     {}
     virtual int getOffset()
-    {}
+    {
+        return -1;
+    }
 
 };
 
@@ -87,6 +98,7 @@ public:
         else if(type==1){
 			//cout<<"T_FUNCTION"<<endl;
             string name = instructionList.at(0)->getList().at(0)->getString();
+            cfun = name;
             int offset = instructionList.at(1)->getOffset();
             cout<<".globl "<<name<<"\n";
             cout<<"\t.type "<<name<<",@function\n";
@@ -142,6 +154,11 @@ public:
         else if(type==8){
 		    //cout<<"T_JUMP"<<endl;
 			printList();
+            if(instructionList.at(0)->getInt()==1)
+            {
+                cout<<"\tmovl $.stracc,%eax\n";
+            }
+            cout<<"\tjmp ."<<cfun<<"_ret\n";
 		}//T_JUMP           
     }
 	
@@ -379,6 +396,7 @@ public:
     binaryOP operation;
     Node* leftExp;
     Node* rightExp;
+    variableType type;
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
@@ -388,6 +406,7 @@ public:
 
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
+            type= T_INT;
             int re;
             if(operation==0)
                 re=leftExp->getValue()+rightExp->getValue();
@@ -405,8 +424,10 @@ public:
                 re=leftExp->getValue()>>rightExp->getValue();
             cout<<"\tmovl $"<<re<<", %eax"<<endl;
         }
-        else
+        else if( leftExp->getInt()==0 && rightExp->getInt()==0 )
         {
+            type=T_INT;
+
             leftExp->code();
             cout<<"\tpush %eax\n";
             rightExp->code();
@@ -447,6 +468,10 @@ public:
     virtual string getNodeType()
     {
         return "NBinaryOp";
+    }
+    virtual int getInt()
+    {
+        return type;
     }
 
 };
