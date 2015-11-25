@@ -13,8 +13,10 @@ enum unaryOP { T_NEGATIVE};
 enum binaryOP {T_PLUS, T_MINUS, T_MULTI, T_DIV, T_MODULE, T_SHIFTLEFT, T_SHIFTRIGHT};
 enum comparisonOP { T_EGAL, T_SUP, T_INF, T_INFEQUAL, T_SUPEQUAL, T_DIFF};
 
-extern int labelIn;
+extern int labelNo;
 extern int labelOut;
+extern int labelSkip;
+extern int labelLoop;
 
 class Node
 {
@@ -73,50 +75,60 @@ public:
     {}
     virtual void code()
     {
-        cout<<"NInstruction: type:";
         if(type==0){
-			cout<<"T_PROGRAM"<<endl;
+			//cout<<"T_PROGRAM"<<endl;
 		    printList();
-		}
+		}//T_PROGRAM
         if(type==1){
-			cout<<"T_FUNCTION"<<endl;
+			//cout<<"T_FUNCTION"<<endl;
 		    printList();
-		}
+		}//T_FUNCTION
         if(type==2){
-			cout<<"T_COMPOUND"<<endl;
+			//cout<<"T_COMPOUND"<<endl;
 		    printList();
-		}
+		}//T_COMPOUND
         if(type==3){
-		    cout<<"T_EXPRESSION"<<endl;
+		    //cout<<"T_EXPRESSION"<<endl;
 			printList();
-		}          
+		}//T_EXPRESSION          
         if(type==4){
-		    cout<<"T_DOITERATION"<<endl;
+		    //cout<<"T_DOITERATION"<<endl;
 			printList();
-		}        
+		}//T_DOITERATION        
         if(type==5){
-		    cout<<"T_WHILEITERATION"<<endl;
-			printList();
-		}         
+			labelLoop++;
+			cout<<"Loop"<<labelLoop<<":"<<endl;
+			
+			instructionList.at(0)->code();
+			labelSkip++;
+			cout<<"Skip"<<labelSkip<<endl;
+			
+			instructionList.at(1)->code();
+			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			
+			cout<<"Skip"<<labelSkip<<":"<<endl;
+		}//T_WHILEITERATION         
         if(type==6){
-		    cout<<"T_FORITERATION"<<endl;
+		    //cout<<"T_FORITERATION"<<endl;
 			printList();
-		}          
+		}//T_FORITERATION          
         if(type==7){
 			instructionList.at(0)->code();
+			labelNo++;
+			cout<<"No"<<labelNo<<endl;
 			labelOut++;
 			if(instructionList.size()==3){
 				instructionList.at(2)->code();
 				cout<<"jmp "<<"Out"<<labelOut<<endl;
 			}
-			cout<<"In"<<labelIn<<":"<<endl;
+			cout<<"No"<<labelNo<<":"<<endl;
 			instructionList.at(1)->code();
 			cout<<"Out"<<labelOut<<":"<<endl;
 		}//T_SELECT
         if(type==8){
-		    cout<<"T_JUMP"<<endl;
+		    //cout<<"T_JUMP"<<endl;
 			printList();
-		}           
+		}//T_JUMP           
     }
 	
 	void printList(){
@@ -137,7 +149,6 @@ public:
     NInt(int value): value(value) {}
     virtual void code()
     {
-        //cout<<"NInt: "<<value<<endl;
         cout<<"movl $"<<value<<", %eax"<<endl;
     }
     virtual int getInt()
@@ -190,7 +201,6 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        //cout<<"NIdentifier: "<<id;
         cout<<"movl -"<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
@@ -239,6 +249,9 @@ public:
 
 };
 
+//===========================================
+//  int a,b,c; int foo(int a, int b, int c)
+//===========================================
 class NDeclaration : public NInstruction
 {
 public:
@@ -266,6 +279,9 @@ public:
     }
 };
 
+//==========================================
+//     a,b,c; foo(int a, int b, int c) 
+//==========================================
 class NVarDeclaration : public NInstruction
 {
 public:
@@ -334,8 +350,6 @@ public:
     {}
     virtual void code()
     {
-        cout<<"\n\nNBinaryOp: ";
-
         if(operation==0)
             cout<<"T_PLUS";
         if(operation==1)
@@ -475,28 +489,28 @@ public:
     virtual void code()
     {	
 		leftExp->code();
-		cout<<"mov %eax, %esi"<<endl;
+		cout<<"movl %eax, %esi"<<endl;
 		
 		rightExp->code();
-        cout<<"mov %eax, %edi"<<endl;
+        cout<<"movl %eax, %edi"<<endl;
 		
-		cout<<"cmp %esi, %edi"<<endl;
+		cout<<"cmpl %esi, %edi"<<endl;
 
         if(operation==0)
-            cout<<"je ";  //equal
+            cout<<"jne ";  //equal
         if(operation==1)
-            cout<<"jg ";  //greater than
+            cout<<"jle ";  //greater than
         if(operation==2)
-            cout<<"jl ";  //less than
+            cout<<"jge ";  //less than
         if(operation==3)
-            cout<<"jle ";  //less or equal 
+            cout<<"jg ";  //less or equal 
         if(operation==4)
-            cout<<"jge ";  //greater or equal
+            cout<<"jl ";  //greater or equal
         if(operation==5)
-            cout<<"jne ";  //not equal
+            cout<<"je ";  //not equal
 		
-		labelIn++;
-		cout<<"In"<<labelIn<<endl;
+		//labelIn++;
+		//cout<<"In"<<labelIn<<endl;
     }
 };
 
