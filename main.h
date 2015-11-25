@@ -78,23 +78,23 @@ public:
     virtual void code()
     {
         if(type==0){
-			//cout<<"T_PROGRAM"<<endl;
+			cout<<"T_PROGRAM"<<endl;
 		    printList();
 		}//T_PROGRAM
         if(type==1){
-			//cout<<"T_FUNCTION"<<endl;
+			cout<<"T_FUNCTION"<<endl;
 		    printList();
 		}//T_FUNCTION
         if(type==2){
-			//cout<<"T_COMPOUND"<<endl;
+			cout<<"T_COMPOUND"<<endl;
 		    printList();
 		}//T_COMPOUND
         if(type==3){
-		    //cout<<"T_EXPRESSION"<<endl;
+		    cout<<"T_EXPRESSION"<<endl;
 			printList();
 		}//T_EXPRESSION          
         if(type==4){
-		    //cout<<"T_DOITERATION"<<endl;
+		    cout<<"T_DOITERATION"<<endl;
 			printList();
 		}//T_DOITERATION        
         if(type==5){
@@ -111,7 +111,7 @@ public:
 			cout<<"Skip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
         if(type==6){
-		    //cout<<"T_FORITERATION"<<endl;
+		    cout<<"T_FORITERATION"<<endl;
 			printList();
 		}//T_FORITERATION          
         if(type==7){
@@ -203,6 +203,7 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
+		//cout<<"Identifier"<<endl;
         cout<<"movl -"<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
@@ -357,7 +358,7 @@ public:
     {}
     virtual void code()
     {
-        /*if(operation==0)
+        if(operation==0)
             cout<<"T_PLUS";
         if(operation==1)
             cout<<"T_MINUS";
@@ -372,8 +373,7 @@ public:
         if(operation==6)
             cout<<"T_SHIFTRIGHT";
         cout<<"\n";
-        */
-
+        
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
             int re;
@@ -475,7 +475,7 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        //cout<<"NAssign: "<<id->getString()<<" = ";
+        cout<<"NAssign: "<<id->getString()<<" = ";
         exp->code();
         int offset= id->getOffset();
         cout<<"movl %eax, -"<<offset<<"(%ebp)\n";

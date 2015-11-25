@@ -473,7 +473,7 @@ WHILE '(' condition ')' instruction {
 	vector<Node*>* vec = new vector<Node*>; 
 	vec->push_back($3); 
 	vec->push_back($5); 
-        $$ = new NInstruction(T_WHILEITERATION, *vec); }
+    $$ = new NInstruction(T_WHILEITERATION, *vec); }
 | DO instruction WHILE '(' condition ')' { 
 	vector<Node*>* vec = new vector<Node*>; 
 	vec->push_back($2); 
@@ -484,6 +484,7 @@ WHILE '(' condition ')' instruction {
 	vec->push_back($3); 
 	vec->push_back($5); 
 	vec->push_back($7); 
+	vec->push_back($9);
 	$$ = new NInstruction(T_FORITERATION, *vec);}
 ;
 
@@ -503,6 +504,7 @@ WHILE '(' condition ')' instruction1  {
 	vec->push_back($3); 
 	vec->push_back($5); 
 	vec->push_back($7); 
+	vec->push_back($9);
 	$$ = new NInstruction(T_FORITERATION, *vec);}
 ;
 
