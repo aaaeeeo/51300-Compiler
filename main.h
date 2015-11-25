@@ -80,25 +80,30 @@ public:
     virtual void code()
     {
         if(type==0){
-			cout<<"T_PROGRAM"<<endl;
 		    printList();
 		}//T_PROGRAM
         else if(type==1){
-			//cout<<"T_FUNCTION"<<endl;
 		    printList();
 		}//T_FUNCTION
         else if(type==2)
         {
-			//cout<<"T_COMPOUND"<<endl;
 		    printList();
 		}//T_COMPOUND
         else if(type==3){
-		    //cout<<"T_EXPRESSION"<<endl;
 			printList();
 		}//T_EXPRESSION          
         else if(type==4){
-		    //cout<<"T_DOITERATION"<<endl;
-			printList();
+			labelLoop++;
+			cout<<"Loop"<<labelLoop<<":"<<endl;
+			
+			instructionList.at(0)->code();
+			instructionList.at(1)->code();
+			
+			labelSkip++;
+			cout<<"Skip"<<labelSkip<<endl;
+			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			
+			cout<<"Skip"<<labelSkip<<":"<<endl;
 		}//T_DOITERATION        
         else if(type==5){
 			labelLoop++;
@@ -114,8 +119,19 @@ public:
 			cout<<"Skip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
         else if(type==6){
-		    //cout<<"T_FORITERATION"<<endl;
-			printList();
+			labelLoop++;
+			cout<<"Loop"<<labelLoop<<":"<<endl;
+			
+			instructionList.at(0)->code();
+			instructionList.at(1)->code();
+			labelSkip++;
+			cout<<"Skip"<<labelSkip<<endl;
+			
+			instructionList.at(3)->code();
+			instructionList.at(2)->code();			
+			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			
+			cout<<"Skip"<<labelSkip<<":"<<endl;
 		}//T_FORITERATION          
         else if(type==7){
 			instructionList.at(0)->code();
@@ -131,7 +147,7 @@ public:
 			cout<<"Out"<<labelOut<<":"<<endl;
 		}//T_SELECT
         else if(type==8){
-		    //cout<<"T_JUMP"<<endl;
+		    
 			printList();
 		}//T_JUMP           
     }
@@ -206,7 +222,6 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-		//cout<<"Identifier"<<endl;
         cout<<"movl -"<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
@@ -468,7 +483,6 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        cout<<"NAssign: "<<id->getString()<<" = ";
         exp->code();
         int offset= id->getOffset();
         cout<<"movl %eax, -"<<offset<<"(%ebp)\n";
