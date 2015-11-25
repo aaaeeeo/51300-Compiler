@@ -79,7 +79,32 @@ void save_symbol(unordered_map<string, int>* table, string name, int type)
 		{
 			size+=128;
 			(*table)["0"] = size;
+			(*table)[name] = -size;
+		}
+		else
+			(*table)[name] = type;
+	}
+}
+
+void save_symbol_pa(unordered_map<string, int>* table, string name, int type)
+{
+	string temp = "Redeclaration for " + name;
+	if(table->find(name)!=table->end()) 
+        yyerror(temp.c_str());
+	else
+	{
+		int size = (*table)["0"];
+		if(type==0)
+		{
+			size+=4;
+			//(*table)["0"] = size;
 			(*table)[name] = size;
+		}
+		else if(type==1)
+		{
+			size+=128;
+			//(*table)["0"] = size;
+			(*table)[name] = -size;
 		}
 		else
 			(*table)[name] = type;
@@ -97,14 +122,24 @@ void print_table( unordered_map<string, int>* tb)
 	for ( auto it = tb->begin(); it != tb->end(); it++ )
     {	cout << it->first << "\t" ;
     	int type= it->second;
-    	if(type==0)
-    		cout<<"int"<<endl;
-    	else if(type==1)
-    		cout<<"string"<<endl;
-    	else if(type==2)
-    		cout<<"function, int"<<endl;
-    	else if(type==3)
-    		cout<<"function, string"<<endl;
+    	cout<<type<<endl;
+    }
+}
+
+void code_table_var( unordered_map<string, int>* tb)
+{
+	//cout<<"------------Symbol Table--------------"<<endl;
+	for ( auto it = tb->begin(); it != tb->end(); it++ )
+    {	if(it->first!="0")
+		{
+    	int type= it->second;
+    	if(type==2||type==3)
+    		;
+    	else if(type>0)
+    		cout<<"\t.comm "<<it->first<<",4,4\n";
+    	else if(type<0)
+    		cout<<"\t.comm "<<it->first<<",128,4\n";
+    	}
     }
 }
 
@@ -126,6 +161,12 @@ void check_type( Node* a, Node *b)
 		str+=(b->getInt()==0 ? "int" : "string");
 		yyerror(str.c_str());
 	}
+}
+
+void save_offset(Node* ins,unordered_map<string, int>* table)
+{
+	cout<<"!!!!"<<(*table)["0"]<<endl<<endl;
+	ins->setOffset((*table)["0"]);
 }
 
 %}
@@ -255,7 +296,7 @@ type function_declarator {
 			type+=2;
 		}
 		//cout<<"para ID:"<<name<<","<<type<<endl;
-		save_symbol(temp_tb,name,type);
+		save_symbol_pa(temp_tb,name,type);
 		
 	} 
 }
@@ -394,10 +435,26 @@ block_start declaration_list instruction_list block_end {
 	vector<Node*>* vec = new vector<Node*>; 
 	vec->insert(vec->end(), $2->begin(), $2->end());
 	vec->insert(vec->end(), $3->begin(), $3->end());
-	$$ = new NInstruction(T_COMPOUND, *vec); }//{$$=$3;}
-| block_start declaration_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);}
-| block_start instruction_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);}
-| block_start block_end  { $$ = new NInstruction(T_COMPOUND); }
+	$$ = new NInstruction(T_COMPOUND, *vec); 
+	save_offset($$,symbolTable.back());
+	delete( symbolTable.back() );
+	symbolTable.pop_back();
+	}//{$$=$3;}
+| block_start declaration_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);
+	save_offset($$,symbolTable.back());
+	delete( symbolTable.back() );
+	symbolTable.pop_back();
+}
+| block_start instruction_list block_end { $$ = new NInstruction(T_COMPOUND, *$2);
+	save_offset($$,symbolTable.back());
+	delete( symbolTable.back() );
+	symbolTable.pop_back();
+}
+| block_start block_end  { $$ = new NInstruction(T_COMPOUND); 
+	save_offset($$,symbolTable.back());
+	delete( symbolTable.back() );
+	symbolTable.pop_back();
+}
 ;
 
 
@@ -431,8 +488,6 @@ block_end :
 {
 	cout<<endl<<"-------Local Symbol Table--------"<<endl;
 	print_table(symbolTable.back());
-	delete( symbolTable.back() );
-	symbolTable.pop_back();
 }
 ;
 
@@ -603,8 +658,14 @@ int main()
 
 	if(yyparse()==0||yyparse()!=0)
 	{
-		cout<<endl<<"--------ABSTRACT TREE--------"<<endl;
+		cout<<endl<<"-----------CODE-----------"<<endl;
 		root->code();
+
+		code_table_var(symbolTable.at(0));
+		code_table_var(symbolTable.at(1));
+		cout<<"\n\t.comm .stracc,256,4\n";
+
+
 }
 
 

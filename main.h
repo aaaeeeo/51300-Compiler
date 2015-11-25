@@ -17,6 +17,7 @@ extern int labelNo;
 extern int labelOut;
 extern int labelSkip;
 extern int labelLoop;
+extern string cfun;
 
 class Node
 {
@@ -30,13 +31,19 @@ public:
     }
 	
     virtual string getString()
-    {}
+    {
+        return "";
+    }
     virtual int getInt()
-    {}
+    {
+        return -1;
+    }
     virtual vector<Node*> getList()
     {}
     virtual Node* getNode()
-    {}
+    {
+        return NULL;
+    }
     virtual void setInt(int)
     {}
     virtual string getNodeType()
@@ -44,11 +51,15 @@ public:
         return "";
     }
     virtual int getValue()
-    {}
+    {
+        return -1;
+    }
     virtual void setOffset(int o)
     {}
     virtual int getOffset()
-    {}
+    {
+        return -1;
+    }
 
 };
 
@@ -70,6 +81,7 @@ class NInstruction : public Node
 public:
     instructionType type;
     vector<Node*> instructionList;
+    int offset;
 
     NInstruction(instructionType type, vector<Node*> instructionList): type(type), instructionList(instructionList)
     {}
@@ -83,7 +95,16 @@ public:
 		    printList();
 		}//T_PROGRAM
         else if(type==1){
+            string name = instructionList.at(0)->getList().at(0)->getString();
+            cfun = name;
+            int offset = instructionList.at(1)->getOffset();
+            cout<<".globl "<<name<<"\n";
+            cout<<"\t.type "<<name<<",@function\n";
+            cout<<name<<":\n";
+            cout<<"\tenter $"<<offset<<",$0\n";
 		    printList();
+            cout<<"."<<name<<"_ret:\n\tleave\n\tret\n\n";
+
 		}//T_FUNCTION
         else if(type==2)
         {
@@ -149,14 +170,29 @@ public:
         else if(type==8){
 		    
 			printList();
+            if(instructionList.at(0)->getInt()==1)
+            {
+                cout<<"\tmovl $.stracc,%eax\n";
+            }
+            cout<<"\tjmp ."<<cfun<<"_ret\n";
 		}//T_JUMP           
     }
 	
 	void printList(){
 	    for( auto it = instructionList.begin(); it != instructionList.end(); it++){
             (*it)->code();
-        }
+        }  
 	}
+    void setOffset(int o)
+    {
+        if(o<0)
+            o=-o;
+        offset=o;
+    }
+    int getOffset()
+    {
+        return offset;
+    }
 };
 
 //===========================================
@@ -170,7 +206,7 @@ public:
     NInt(int value): value(value) {}
     virtual void code()
     {
-        cout<<"movl $"<<value<<", %eax"<<endl;
+        cout<<"\tmovl $"<<value<<", %eax"<<endl;
     }
     virtual int getInt()
     {
@@ -222,7 +258,7 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        cout<<"movl -"<<offset<<"(%ebp), %eax\n";
+        cout<<"\tmovl -"<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
     {
@@ -292,7 +328,7 @@ public:
 
     virtual void code()
     {
-        cout<<"NDeclaration: type:"<<( type==0 ? "int" : "string" )<<endl;
+        //cout<<"NDeclaration: type:"<<( type==0 ? "int" : "string" )<<endl;
         for( auto it = declList.begin(); it != declList.end(); it++)
         {
             (*it)->code();
@@ -326,7 +362,7 @@ public:
 
     virtual void code()
     {
-        cout<<"NVarDeclaration: "<<( isfun==1 ? "function " : "" )<<"name: "<<name->getString()<<endl;
+        //cout<<"NVarDeclaration: "<<( isfun==1 ? "function " : "" )<<"name: "<<name->getString()<<endl;
     }
     virtual int getInt()
     {
@@ -358,7 +394,7 @@ public:
     {
         //cout<<"NUnaryOp: - ";
         childExp->code();
-        cout<<"movl %eax, %ebx\nmovl $0, %eax\nsubl %ebx, %eax\n";
+        cout<<"\tmovl %eax, %ebx\nmovl $0, %eax\nsubl %ebx, %eax\n";
     }
     virtual Node* getNode()
     {
@@ -375,6 +411,7 @@ public:
     binaryOP operation;
     Node* leftExp;
     Node* rightExp;
+    variableType type;
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
@@ -384,6 +421,7 @@ public:
 
         if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
+            type= T_INT;
             int re;
             if(operation==0)
                 re=leftExp->getValue()+rightExp->getValue();
@@ -399,39 +437,41 @@ public:
                 re=leftExp->getValue()<<rightExp->getValue();
             if(operation==6)
                 re=leftExp->getValue()>>rightExp->getValue();
-            cout<<"movl $"<<re<<", %eax"<<endl;
+            cout<<"\tmovl $"<<re<<", %eax"<<endl;
         }
-        else
+        else if( leftExp->getInt()==0 && rightExp->getInt()==0 )
         {
+            type=T_INT;
+
             leftExp->code();
-            cout<<"push %eax\n";
+            cout<<"\tpush %eax\n";
             rightExp->code();
-            cout<<"push %eax\n";
-            cout<<"pop %ebx\npop %eax\n";
+            cout<<"\tpush %eax\n";
+            cout<<"\tpop %ebx\n\tpop %eax\n";
             if(operation==0)
-                cout<<"addl %ebx, %eax"<<endl;
+                cout<<"\taddl %ebx, %eax"<<endl;
             if(operation==1)
-                cout<<"subl %ebx, %eax"<<endl;
+                cout<<"\tsubl %ebx, %eax"<<endl;
             if(operation==2)
-                cout<<"imull %ebx, %eax"<<endl;
+                cout<<"\timull %ebx, %eax"<<endl;
             if(operation==3)
             {
-                cout<<"cltd\n";
-                cout<<"idivl %ebx"<<endl;
+                cout<<"\tcltd\n";
+                cout<<"\tidivl %ebx"<<endl;
             }
             if(operation==4)
             {
-                cout<<"cltd\n";
-                cout<<"idivl %ebx"<<endl;
-                cout<<"movl %edx,%eax\n";
+                cout<<"\tcltd\n";
+                cout<<"\tidivl %ebx"<<endl;
+                cout<<"\tmovl %edx,%eax\n";
             }
             if(operation==5)
             {
-                cout<<"sall %bl, %ea\n";
+                cout<<"\tsall %bl, %ea\n";
             }
             if(operation==6)
             {
-                cout<<"sarl %bl, %ea\n";
+                cout<<"\tsarl %bl, %ea\n";
             }
         }
 
@@ -443,6 +483,10 @@ public:
     virtual string getNodeType()
     {
         return "NBinaryOp";
+    }
+    virtual int getInt()
+    {
+        return type;
     }
 
 };
@@ -485,7 +529,7 @@ public:
     {
         exp->code();
         int offset= id->getOffset();
-        cout<<"movl %eax, -"<<offset<<"(%ebp)\n";
+        cout<<"\tmovl %eax, -"<<offset<<"(%ebp)\n";
     }
 };
 
