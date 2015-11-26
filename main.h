@@ -185,8 +185,6 @@ public:
 	}
     void setOffset(int o)
     {
-        if(o<0)
-            o=-o;
         offset=o;
     }
     int getOffset()
@@ -258,7 +256,10 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        cout<<"\tmovl -"<<offset<<"(%ebp), %eax\n";
+        if(offset==1 || offset==-1)
+            cout<<"\tmovl "<<id<<", %eax\n";
+        else
+            cout<<"\tmovl "<<offset<<"(%ebp), %eax\n";
     }
     virtual string getString()
     {
@@ -274,8 +275,6 @@ public:
     }
     virtual void setOffset(int o)
     {
-        if(o<0)
-            o=-o;
         offset=o;
     }
     virtual int getOffset()
@@ -531,7 +530,10 @@ public:
     {
         exp->code();
         int offset= id->getOffset();
-        cout<<"\tmovl %eax, -"<<offset<<"(%ebp)\n";
+        if(offset==1 || offset==-1)
+            cout<<"\tmovl %eax, "<<id->getString()<<"\n";
+        else
+            cout<<"\tmovl %eax, "<<offset<<"(%ebp)\n";
     }
 };
 

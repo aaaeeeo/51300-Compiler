@@ -12,21 +12,25 @@ extern "C"
 }
 
 
-// key-0 totall offsets
+// +offset.5 for int para
+// -offset.5 for string para
 // +offset for int
 // -offset for string
+// +1 for global int
+// -1 for global string
 // 2 for int function 
 // 3 for string function
-vector< unordered_map<string, int>* > symbolTable;
-unordered_map<string, int>* temp_tb;
+vector< unordered_map<string, double>* > symbolTable;
+unordered_map<string, double>* temp_tb;
 Node* root;
+int coffset=0;
 
 
-int check_str(string id)
+double check_str(string id)
 {
 	for(int i=symbolTable.size()-1; i>=0; i--)
 	{
-		unordered_map<string, int>* table = symbolTable.at(i) ;
+		unordered_map<string, double>* table = symbolTable.at(i) ;
 		if(table->find(id)!=table->end()) 
         {
         	return (*table)[id];
@@ -38,7 +42,7 @@ int check_str(string id)
 
 void check_ID(Node* node)
 {
-	int type;
+	double type;
 	type = check_str(node->getString());
 	if(type==-1)
 	{
@@ -52,48 +56,71 @@ void check_ID(Node* node)
 			node->setInt(type);
 		else
 		{
-			node->setOffset(type);
 			if(type>0)
 				node->setInt(0);
 			else
 				node->setInt(1);
+
+			if(type<0)
+				type=-type;
+			if((int)(type*10)%10 == 0)
+				type=-type;
+			node->setOffset(type);
 		}
 	}
 }
 
-void save_symbol(unordered_map<string, int>* table, string name, int type)
+void save_symbol(unordered_map<string, double>* table, string name, int type)
 {
 	string temp = "Redeclaration for " + name;
 	if(table->find(name)!=table->end()) 
         yyerror(temp.c_str());
 	else
 	{
-		int size = (*table)["0"];
 		if(type==0)
 		{
-			size+=4;
-			(*table)["0"] = size;
-			(*table)[name] = size;
+			coffset+=4;
+			(*table)[name] = coffset;
 		}
 		else if(type==1)
 		{
-			size+=128;
-			(*table)["0"] = size;
-			(*table)[name] = -size;
+			coffset+=128;
+			(*table)[name] = -coffset;
 		}
 		else
 			(*table)[name] = type;
 	}
 }
 
-void save_symbol_pa(unordered_map<string, int>* table, string name, int type)
+void save_symbol_gb(unordered_map<string, double>* table, string name, int type)
 {
 	string temp = "Redeclaration for " + name;
 	if(table->find(name)!=table->end()) 
         yyerror(temp.c_str());
 	else
 	{
-		int size = (*table)["0"];
+		if(type==0)
+		{
+			(*table)[name] = +1;
+		}
+		else if(type==1)
+		{
+			coffset+=128;
+			(*table)[name] = -1;
+		}
+		else
+			(*table)[name] = type;
+	}
+}
+
+void save_symbol_pa(unordered_map<string, double>* table, string name, int type)
+{
+	string temp = "Redeclaration for " + name;
+	if(table->find(name)!=table->end()) 
+        yyerror(temp.c_str());
+	else
+	{
+		double size=0.5;
 		if(type==0)
 		{
 			size+=4;
@@ -111,22 +138,22 @@ void save_symbol_pa(unordered_map<string, int>* table, string name, int type)
 	}
 }
 
-void init_table(unordered_map<string, int>* table)
+void init_table(unordered_map<string, double>* table)
 {
-	(*table)["0"]=0;
+	//(*table)["0"]=0;
 }
 
-void print_table( unordered_map<string, int>* tb)
+void print_table( unordered_map<string, double>* tb)
 {
 	//cout<<"------------Symbol Table--------------"<<endl;
 	for ( auto it = tb->begin(); it != tb->end(); it++ )
     {	cout << it->first << "\t" ;
-    	int type= it->second;
+    	double type= it->second;
     	cout<<type<<endl;
     }
 }
 
-void code_table_var( unordered_map<string, int>* tb)
+void code_table_var( unordered_map<string, double>* tb)
 {
 	//cout<<"------------Symbol Table--------------"<<endl;
 	for ( auto it = tb->begin(); it != tb->end(); it++ )
@@ -163,10 +190,10 @@ void check_type( Node* a, Node *b)
 	}
 }
 
-void save_offset(Node* ins,unordered_map<string, int>* table)
+void save_offset(Node* ins,unordered_map<string, double>* table)
 {
-	cout<<"!!!!"<<(*table)["0"]<<endl<<endl;
-	ins->setOffset((*table)["0"]);
+	//cout<<"!!!!"<<(*table)["0"]<<endl<<endl;
+	ins->setOffset(coffset);
 }
 
 %}
@@ -232,7 +259,7 @@ declaration 	// Declaration Global
 
 	vector<Node*> list = $1->getList();
 	int type = $1->getInt();
-	unordered_map<string, int>* table = symbolTable.at(1);
+	unordered_map<string, double>* table = symbolTable.at(1);
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
@@ -242,7 +269,7 @@ declaration 	// Declaration Global
 			type+=2;
 		}
 		//cout<<"GLB ID:"<<name<<","<<type<<endl;
-		save_symbol(table,name,type);
+		save_symbol_gb(table,name,type);
 	}
 }			
 | EXTERN declaration // Set Extern attribute	
@@ -251,7 +278,7 @@ declaration 	// Declaration Global
 
 	vector<Node*> list = $2->getList();
 	int type = $2->getInt();
-	unordered_map<string, int>* table = symbolTable.at(0);
+	unordered_map<string, double>* table = symbolTable.at(0);
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
@@ -261,7 +288,7 @@ declaration 	// Declaration Global
 			type+=2;
 		}
 		//cout<<"extern ID:"<<name<<","<<type<<endl;
-		save_symbol(table,name,type);
+		save_symbol_gb(table,name,type);
 	}
 }		
 | function_definition { 
@@ -277,13 +304,14 @@ declaration 	// Declaration Global
 function_definition :  
 type function_declarator {
 	//store function
-	unordered_map<string, int>* table = symbolTable.back();
+	unordered_map<string, double>* table = symbolTable.back();
 	string funname = $2->getString();
 	(*table)[funname]=($1+2);
 
+	coffset=0;
 
 	//store parameters
-	temp_tb = new unordered_map<string,int>;
+	temp_tb = new unordered_map<string,double>;
 	vector<Node*> list = $2->getList();
 
 	for(int i=0; i<list.size(); i++)
@@ -344,7 +372,7 @@ declaration 				// Set locals
 	
 	vector<Node*> list = $1->getList();
 	int type = $1->getInt();
-	unordered_map<string, int>* table = symbolTable.back();
+	unordered_map<string, double>* table = symbolTable.back();
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
@@ -363,7 +391,7 @@ declaration 				// Set locals
 
 	vector<Node*> list = $2->getList();
 	int type = $2->getInt();
-	unordered_map<string, int>* table = symbolTable.back();
+	unordered_map<string, double>* table = symbolTable.back();
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
@@ -461,7 +489,7 @@ block_start declaration_list instruction_list block_end {
 block_start :  
 '{'  // Init your hash table _ symbol table
 {
-	unordered_map<string, int>* table = new unordered_map<string, int>;
+	unordered_map<string, double>* table = new unordered_map<string, double>;
 	init_table(table);
 
 
@@ -649,14 +677,14 @@ int yyerror(const char* msg)
 
 int main()
 {
-	unordered_map<string, int>* table_glb = new unordered_map<string, int>;
-	unordered_map<string, int>* table_ertern = new unordered_map<string, int>;
+	unordered_map<string, double>* table_glb = new unordered_map<string, double>;
+	unordered_map<string, double>* table_ertern = new unordered_map<string, double>;
 	init_table(table_glb);
 	init_table(table_ertern);
 	symbolTable.push_back(table_ertern);
 	symbolTable.push_back(table_glb);
 
-	if(yyparse()==0||yyparse()!=0)
+	if(yyparse()==0)
 	{
 		cout<<endl<<"-----------CODE-----------"<<endl;
 		root->code();
