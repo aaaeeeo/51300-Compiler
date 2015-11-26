@@ -115,57 +115,57 @@ public:
 		}//T_EXPRESSION          
         else if(type==4){
 			labelLoop++;
-			cout<<"Loop"<<labelLoop<<":"<<endl;
+			cout<<"\tloop"<<labelLoop<<":"<<endl;
 			
 			instructionList.at(0)->code();
 			instructionList.at(1)->code();
 			
 			labelSkip++;
-			cout<<"Skip"<<labelSkip<<endl;
-			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			cout<<"skip"<<labelSkip<<endl;
+			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
 			
-			cout<<"Skip"<<labelSkip<<":"<<endl;
+			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_DOITERATION        
         else if(type==5){
 			labelLoop++;
-			cout<<"Loop"<<labelLoop<<":"<<endl;
+			cout<<"\tloop"<<labelLoop<<":"<<endl;
 			
 			instructionList.at(0)->code();
 			labelSkip++;
-			cout<<"Skip"<<labelSkip<<endl;
+			cout<<"skip"<<labelSkip<<endl;
 			
 			instructionList.at(1)->code();
-			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
 			
-			cout<<"Skip"<<labelSkip<<":"<<endl;
+			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
         else if(type==6){
 			labelLoop++;
-			cout<<"Loop"<<labelLoop<<":"<<endl;
+			cout<<"\tloop"<<labelLoop<<":"<<endl;
 			
 			instructionList.at(0)->code();
 			instructionList.at(1)->code();
 			labelSkip++;
-			cout<<"Skip"<<labelSkip<<endl;
+			cout<<"skip"<<labelSkip<<endl;
 			
 			instructionList.at(3)->code();
 			instructionList.at(2)->code();			
-			cout<<"jmp "<<"Loop"<<labelLoop<<endl;
+			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
 			
-			cout<<"Skip"<<labelSkip<<":"<<endl;
+			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_FORITERATION          
         else if(type==7){
 			instructionList.at(0)->code();
 			labelNo++;
-			cout<<"No"<<labelNo<<endl;
+			cout<<"no"<<labelNo<<endl;
 			labelOut++;
 			if(instructionList.size()==3){
 				instructionList.at(2)->code();
-				cout<<"jmp "<<"Out"<<labelOut<<endl;
+				cout<<"\tjmp "<<"out"<<labelOut<<endl;
 			}
-			cout<<"No"<<labelNo<<":"<<endl;
+			cout<<"\tno"<<labelNo<<":"<<endl;
 			instructionList.at(1)->code();
-			cout<<"Out"<<labelOut<<":"<<endl;
+			cout<<"\tout"<<labelOut<<":"<<endl;
 		}//T_SELECT
         else if(type==8){
 		    
@@ -392,7 +392,6 @@ public:
     {}
     virtual void code()
     {
-        //cout<<"NUnaryOp: - ";
         childExp->code();
         cout<<"\tmovl %eax, %ebx\nmovl $0, %eax\nsubl %ebx, %eax\n";
     }
@@ -507,7 +506,10 @@ public:
     funcationName(name) {}
     virtual void code()
     {
-        cout<<"NFunctionCall: name:"<<funcationName->getString()<<endl;
+		for( auto it = argumentList.begin(); it != argumentList.end(); it++){
+            cout<<"\tpushl "<<
+        } 
+        cout<<"\tcall "<<funcationName->getString()<<endl;
     }
     virtual Node* getNode()
     {
@@ -549,25 +551,25 @@ public:
     virtual void code()
     {	
 		leftExp->code();
-		cout<<"movl %eax, %esi"<<endl;
+		cout<<"\tmovl %eax, %esi"<<endl;
 		
 		rightExp->code();
-        cout<<"movl %eax, %edi"<<endl;
+        cout<<"\tmovl %eax, %edi"<<endl;
 		
-		cout<<"cmpl %esi, %edi"<<endl;
+		cout<<"\tcmpl %esi, %edi"<<endl;
 
         if(operation==0)
-            cout<<"jne ";  //equal
+            cout<<"\tjne ";  //equal
         if(operation==1)
-            cout<<"jle ";  //greater than
+            cout<<"\tjle ";  //greater than
         if(operation==2)
-            cout<<"jge ";  //less than
+            cout<<"\tjge ";  //less than
         if(operation==3)
-            cout<<"jg ";  //less or equal 
+            cout<<"\tjg ";  //less or equal 
         if(operation==4)
-            cout<<"jl ";  //greater or equal
+            cout<<"\tjl ";  //greater or equal
         if(operation==5)
-            cout<<"je ";  //not equal
+            cout<<"\tje ";  //not equal
 		
 		//labelIn++;
 		//cout<<"In"<<labelIn<<endl;
