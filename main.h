@@ -505,10 +505,13 @@ public:
     funcationName(name) {}
     virtual void code()
     {
+		int count=0;
 		for( auto it = argumentList.begin(); it != argumentList.end(); it++){
-            cout<<"\tpushl "<<
+			count++;
+            cout<<"\tpushl "<<(*it)->getOffset()<<"(%ebp)"<<endl;
         } 
         cout<<"\tcall "<<funcationName->getString()<<endl;
+		cout<<"\taddl $"<<4*count<<", %esp"<<endl;
     }
     virtual Node* getNode()
     {
