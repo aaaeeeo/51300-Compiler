@@ -392,7 +392,7 @@ public:
     virtual void code()
     {
         childExp->code();
-        cout<<"\tmovl %eax, %ebx\nmovl $0, %eax\nsubl %ebx, %eax\n";
+        cout<<"\tmovl %eax, %ebx\n\tmovl $0, %eax\n\tsubl %ebx, %eax\n";
     }
     virtual Node* getNode()
     {
