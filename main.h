@@ -140,10 +140,10 @@ public:
 			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
         else if(type==6){
+            instructionList.at(0)->code();
 			labelLoop++;
 			cout<<"\tloop"<<labelLoop<<":"<<endl;
 			
-			instructionList.at(0)->code();
 			instructionList.at(1)->code();
 			labelSkip++;
 			cout<<"skip"<<labelSkip<<endl;
@@ -160,11 +160,11 @@ public:
 			cout<<"no"<<labelNo<<endl;
 			labelOut++;
 			if(instructionList.size()==3){
-				instructionList.at(2)->code();
+				instructionList.at(1)->code();
 				cout<<"\tjmp "<<"out"<<labelOut<<endl;
 			}
 			cout<<"\tno"<<labelNo<<":"<<endl;
-			instructionList.at(1)->code();
+			instructionList.at(2)->code();
 			cout<<"\tout"<<labelOut<<":"<<endl;
 		}//T_SELECT
         else if(type==8){
@@ -561,7 +561,7 @@ public:
 		rightExp->code();
         cout<<"\tmovl %eax, %edi"<<endl;
 		
-		cout<<"\tcmpl %esi, %edi"<<endl;
+		cout<<"\tcmpl %edi, %esi"<<endl;
 
         if(operation==0)
             cout<<"\tjne ";  //equal
