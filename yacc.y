@@ -10,7 +10,7 @@ extern "C"
 	extern int yylex(void);
 	extern int yylineno;
 }
-
+extern string section;
 
 // +offset.5 for int para
 // -offset.5 for string para
@@ -662,7 +662,11 @@ IDENT
 	$$=$1; 
 }
 | CONST_INT		{ $$=$1; }
-| CONST_STRING  { $$=$1; }
+| CONST_STRING  { 
+	$$=$1; 
+	string value= $$->getString();
+
+}
 | '(' expression ')'	{ $$=$2; }
 ;
 
@@ -691,8 +695,8 @@ int main()
 
 		code_table_var(symbolTable.at(0));
 		code_table_var(symbolTable.at(1));
-		cout<<"\n\t.comm .stracc,256,4\n";
-
+		cout<<"\n\t.comm .stracc,256,4\n\n";
+		cout<<section;
 
 }
 

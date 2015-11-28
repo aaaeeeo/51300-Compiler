@@ -18,6 +18,7 @@ extern int labelOut;
 extern int labelSkip;
 extern int labelLoop;
 extern string cfun;
+extern int save_cstr(string value);
 
 class Node
 {
