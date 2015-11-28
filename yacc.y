@@ -24,6 +24,7 @@ vector< unordered_map<string, double>* > symbolTable;
 unordered_map<string, double>* temp_tb;
 Node* root;
 int coffset=0;
+double poffset=0.5;
 
 
 double check_str(string id)
@@ -65,6 +66,8 @@ void check_ID(Node* node)
 				type=-type;
 			if((int)(type*10)%10 == 0)
 				type=-type;
+			else
+				type+=8;
 			node->setOffset(type);
 		}
 	}
@@ -120,18 +123,19 @@ void save_symbol_pa(unordered_map<string, double>* table, string name, int type)
         yyerror(temp.c_str());
 	else
 	{
-		double size=0.5;
 		if(type==0)
 		{
-			size+=4;
+			(*table)[name] = poffset;
+			poffset+=4;
 			//(*table)["0"] = size;
-			(*table)[name] = size;
+			
 		}
 		else if(type==1)
 		{
-			size+=128;
+			(*table)[name] = -poffset;
+			//cout<<"save str pa: "<<size<<endl; 
+			poffset+=128;
 			//(*table)["0"] = size;
-			(*table)[name] = -size;
 		}
 		else
 			(*table)[name] = type;
@@ -314,15 +318,12 @@ type function_declarator {
 	temp_tb = new unordered_map<string,double>;
 	vector<Node*> list = $2->getList();
 
+	poffset=0.5;
 	for(int i=0; i<list.size(); i++)
 	{
 		string name = list.at(i)->getString();
 		int type = list.at(i)->getInt();
 		
-		if(list.at(i)->getInt()==1)
-		{
-			type+=2;
-		}
 		//cout<<"para ID:"<<name<<","<<type<<endl;
 		save_symbol_pa(temp_tb,name,type);
 		
