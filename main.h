@@ -552,7 +552,7 @@ public:
 
             if((*it)->getNodeType()=="NString")
             {
-                int num=save_cstr((*it)->getValue());
+                int num=save_cstr((*it)->getString());
                 string src="$.s";
                 src+=itos(num);
                 cout<<"leal "<<8+snum*128<<"(%esp),%eax\n";
