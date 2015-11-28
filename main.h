@@ -440,7 +440,7 @@ public:
     {
         if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString"){
             if(operation==0){
-
+                cout<<"string add!!!!!!!!!!!"<<endl;
             }
         }
         else if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
@@ -607,15 +607,15 @@ public:
             if(exp->getNodeType()=="NString"){
                 exp->code();
             }else{
-
+                exp->code();
             }
             cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
-            cout<<"pushl %eax"<<endl;
-            cout<<"call strncyp"<<endl;
+            cout<<"\tpushl %eax"<<endl;
+            cout<<"\tcall strncyp"<<endl;
             isStrncpy = true;
-            cout<<"mov $0, 127(%eax)"<<endl;
+            cout<<"\tmov $0, 127(%eax)"<<endl;
             if(isStrncpy){
-                cout<<"addl $12, %esp"<<endl;
+                cout<<"\taddl $12, %esp"<<endl;
             }
             isStrncpy = false;
         }else{
