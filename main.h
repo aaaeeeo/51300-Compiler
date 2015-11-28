@@ -239,7 +239,6 @@ public:
     NString(string value): value(value) {}
     virtual void code()
     {
-        cout<<"\tpushl $128"<<endl;
         int num = save_cstr(this->value);
         cout<<"\tpushl $.s"<<num<<endl;
     }
@@ -269,8 +268,12 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        if(offset==1 || offset==-1)
+        if(offset==1)
             cout<<"\tmovl "<<id<<", %eax\n";
+        else if(offset<=-1){
+            cout<<"\tleal "<<this->getRef()<<", %eax"<<endl;
+            cout<<"\tpushl %eax"<<endl;
+        }
         else
             cout<<"\tmovl "<<offset<<"(%ebp), %eax\n";
     }
@@ -445,8 +448,27 @@ public:
             if(operation==0){
                 string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
-                
+                cout<<"\tpushl $.s"<<num<<endl;               
             }
+        }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
+            leftExp->code();
+            cout<<"\tpush $.stracc"<<endl;
+            cout<<"\tcall strncpy"<<endl;
+            isStrncpy = true;
+            cout<<"\tmov $0, 127(%eax)"<<endl;
+            if(isStrncpy){
+                cout<<"\taddl $12, %esp"<<endl;
+            }
+            isStrncpy = false;
+            rightExp->code();
+            cout<<"\tpush $.stracc"<<endl;
+            cout<<"\tcall strcat"<<endl;
+            isStrncat = true;
+            cout<<"\tmovb $0, 127(%eax)"<<endl;
+            if(isStrncat){
+                cout<<"\taddl $8, %esp"<<endl;
+            }
+            isStrncat = false;
         }
         else if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
@@ -609,20 +631,25 @@ public:
     virtual void code()
     {
         if(id->getInt()==1){
+            cout<<"\tpushl $128"<<endl;
             if(exp->getNodeType()=="NString"){
                 exp->code();
-                cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
-                cout<<"\tpushl %eax"<<endl;
-                cout<<"\tcall strncyp"<<endl;
-                isStrncpy = true;
-                cout<<"\tmov $0, 127(%eax)"<<endl;
-                if(isStrncpy){
-                    cout<<"\taddl $12, %esp"<<endl;
-            }
-            isStrncpy = false;
+                
             }else{
                 exp->code();
+                cout<<"\tpushl $128"<<endl;
+                cout<<"\tpushl $.stracc"<<endl;
             }
+
+            cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
+            cout<<"\tpushl %eax"<<endl;
+            cout<<"\tcall strncyp"<<endl;
+            isStrncpy = true;
+            cout<<"\tmov $0, 127(%eax)"<<endl;
+            if(isStrncpy){
+               cout<<"\taddl $12, %esp"<<endl;
+            }
+            isStrncpy = false;
             
         }else{
             exp->code();

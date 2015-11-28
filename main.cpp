@@ -26,9 +26,9 @@ int save_cstr(string value)
 	cstrNo++;
 	section+=".s";
 	section+=itos(cstrNo);
-	section+=":\t.string ";
+	section+=":\t.string \"";
 	section+=value;
-	section+="\n";
+	section+="\"\n";
 	return cstrNo;
 }
 
