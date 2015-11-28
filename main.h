@@ -252,6 +252,9 @@ public:
     {
         return "NString";
     }
+    virtual string getString(){
+        return this->value;
+    }
 };
 
 //========================================
@@ -441,7 +444,9 @@ public:
     {
         if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString"){
             if(operation==0){
-                cout<<"string add!!!!!!!!!!!"<<endl;
+                string combine = leftExp->getString()+rightExp->getString();
+                int num = save_cstr(combine);
+                
             }
         }
         else if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
@@ -600,18 +605,19 @@ public:
         if(id->getInt()==1){
             if(exp->getNodeType()=="NString"){
                 exp->code();
+                cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
+                cout<<"\tpushl %eax"<<endl;
+                cout<<"\tcall strncyp"<<endl;
+                isStrncpy = true;
+                cout<<"\tmov $0, 127(%eax)"<<endl;
+                if(isStrncpy){
+                    cout<<"\taddl $12, %esp"<<endl;
+            }
+            isStrncpy = false;
             }else{
                 exp->code();
             }
-            cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
-            cout<<"\tpushl %eax"<<endl;
-            cout<<"\tcall strncyp"<<endl;
-            isStrncpy = true;
-            cout<<"\tmov $0, 127(%eax)"<<endl;
-            if(isStrncpy){
-                cout<<"\taddl $12, %esp"<<endl;
-            }
-            isStrncpy = false;
+            
         }else{
             exp->code();
             int offset= id->getOffset();
