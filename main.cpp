@@ -36,6 +36,7 @@ string itos(int i){ // 将int 转换成string
     stringstream s;
     s << i;
     return s.str();
+}
 
 string code_strncpy(string src, string dst)
 {
