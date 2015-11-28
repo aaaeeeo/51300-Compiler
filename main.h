@@ -17,6 +17,8 @@ extern int labelNo;
 extern int labelOut;
 extern int labelSkip;
 extern int labelLoop;
+extern bool isStrncpy;
+extern bool isStrncat;
 extern string cfun;
 extern int save_cstr(string value);
 
@@ -236,7 +238,9 @@ public:
     NString(string value): value(value) {}
     virtual void code()
     {
-        cout<<"NString: "<<value<<endl;
+        cout<<"\tpushl $128"<<endl;
+        int num = save_cstr(this->value);
+        cout<<"\tpushl $.s"<<num<<endl;
     }
     virtual int getInt()
     {
@@ -421,8 +425,12 @@ public:
     {}
     virtual void code()
     {
+        if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString"){
+            if(operation==0){
 
-        if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
+            }
+        }
+        else if(leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NInt")
         {
             type= T_INT;
             int re;
@@ -536,12 +544,29 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        exp->code();
-        int offset= id->getOffset();
-        if(offset==1 || offset==-1)
-            cout<<"\tmovl %eax, "<<id->getString()<<"\n";
-        else
-            cout<<"\tmovl %eax, "<<offset<<"(%ebp)\n";
+        if(id->getType==1){
+            if(exp->getNodeType=="NString"){
+                exp->code();
+            }else{
+
+            }
+            cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
+            cout<<"pushl %eax"<<endl;
+            cout<<"call strncyp"<<endl;
+            isStrncpy = true;
+            cout<<"mov $0, 127(%eax)"<<endl;
+            if(isStrncpy){
+                cout<<"addl $12, %esp"<<endl;
+            }
+            isStrncpy = false;
+        }else{
+            exp->code();
+            int offset= id->getOffset();
+            if(offset==1 || offset==-1)
+                cout<<"\tmovl %eax, "<<id->getString()<<"\n";
+            else
+                cout<<"\tmovl %eax, "<<offset<<"(%ebp)\n";
+        }
     }
 };
 
