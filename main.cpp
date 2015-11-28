@@ -31,8 +31,17 @@ int save_cstr(string value)
 	return cstrNo;
 }
 
+
 string itos(int i){ // 将int 转换成string
     stringstream s;
     s << i;
     return s.str();
+
+string code_strncpy(string src, string dst)
+{
+	cout<<"pushl $128\n";
+	cout<<"pushl "<<src<<endl;
+	cout<<"pushl "<<dst<<endl;
+	cout<<"call strncpy\n";
+	cout<<"movl "<<dst<<", %eax\nmovb $0,127(%eax)\naddl $12, %esp\n";
 }
