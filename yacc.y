@@ -37,14 +37,14 @@ double check_str(string id)
         }
         //cout<<"not found in "<<i<<endl;
 	}
-	return -1;
+	return -2;
 }
 
 void check_ID(Node* node)
 {
 	double type;
 	type = check_str(node->getString());
-	if(type==-1)
+	if(type==-2)
 	{
 		string temp;
 		temp = "No declaration for " + node->getString();

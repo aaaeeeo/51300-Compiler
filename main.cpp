@@ -23,3 +23,13 @@ int save_cstr(string value)
 	section+="\"\n";
 	return cstrNo;
 }
+
+string code_strncpy(string src, string dst)
+{
+	cout<<"pushl $128\n";
+	cout<<"pushl "<<src<<endl;
+	cout<<"pushl "<<dst<<endl;
+	cout<<"call strncpy\n";
+	cout<<"movl "<<dst<<", %eax\nmovb $0,127(%eax)\naddl $12, %esp\n";
+	
+}

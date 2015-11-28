@@ -19,6 +19,8 @@ extern int labelSkip;
 extern int labelLoop;
 extern string cfun;
 extern int save_cstr(string value);
+extern string itos(int i);
+extern void code_strncpy(string src, string dst);
 
 class Node
 {
@@ -60,6 +62,10 @@ public:
     virtual int getOffset()
     {
         return -1;
+    }
+    virtual string getRef()
+    {
+        return "";
     }
 
 };
@@ -163,14 +169,10 @@ public:
 			if(instructionList.size()==3){
 				instructionList.at(1)->code();
 				cout<<"\tjmp "<<"out"<<labelOut<<endl;
-                cout<<"\tno"<<labelNo<<":"<<endl;
-                instructionList.at(2)->code();
-                cout<<"\tout"<<labelOut<<":"<<endl;
-			}else{
-                instructionList.at(1)->code();
-                cout<<"\tno"<<labelNo<<":"<<endl;
-            }
-			
+			}
+			cout<<"\tno"<<labelNo<<":"<<endl;
+			instructionList.at(2)->code();
+			cout<<"\tout"<<labelOut<<":"<<endl;
 		}//T_SELECT
         else if(type==8){
 		    
@@ -285,6 +287,17 @@ public:
     virtual int getOffset()
     {
         return offset;
+    }
+    virtual string getRef()
+    {
+        if(offset==1 || offset==-1)
+            return id;
+        else
+        {
+            string temp="";
+            temp+=itos(offset);
+            temp+="(%ebp)"; 
+        }
     }
     virtual string getNodeType()
     {
@@ -426,7 +439,7 @@ public:
         {
             type= T_INT;
             int re;
-            if(operation==0)//T_PLUS
+            if(operation==0)
                 re=leftExp->getValue()+rightExp->getValue();
             if(operation==1)
                 re=leftExp->getValue()-rightExp->getValue();
@@ -511,12 +524,49 @@ public:
     virtual void code()
     {
 		int count=0;
-		for( auto it = argumentList.begin(); it != argumentList.end(); it++){
-			count++;
-            cout<<"\tpushl "<<(*it)->getOffset()<<"(%ebp)"<<endl;
+        int scount=0;
+        int snum=0;
+        int num=0;
+        for( auto it = argumentList.begin(); it != argumentList.end(); it++)
+        {
+            count++;
+            if((*it)->getNodeType()=="NString")
+            {
+                scount++;
+            }
+        } 
+        for( auto it = argumentList.begin(); it != argumentList.end(); it++)
+        {
+            if(scount==0)
+                break;
+
+            cout<<"subl $"<<scount*128<<", %esp\n";
+
+            if((*it)->getNodeType()=="NString")
+            {
+                int num=save_cstr((*it)->getValue());
+                string src="$.s";
+                src+=itos(num);
+                cout<<"leal "<<8+snum*128<<"(%esp),%eax\n";
+                code_strncpy(src,"%eax");
+                snum++;
+            }
+        } 
+        num=0;snum=0;
+		for( auto it = argumentList.begin(); it != argumentList.end(); it++)
+        {
+            num++;
+            if((*it)->getNodeType()!="NString")
+                cout<<"\tpushl "<<(*it)->getRef()<<endl;
+            else
+            {
+                snum++;
+                cout<<"leal "<<4*num+(scount-snum)*128<<"(%esp),%eax\n";
+            }
+            
         } 
         cout<<"\tcall "<<funcationName->getString()<<endl;
-		cout<<"\taddl $"<<4*count<<", %esp"<<endl;
+		cout<<"\taddl $"<<4*count+128*scount<<", %esp"<<endl;
     }
     virtual Node* getNode()
     {
