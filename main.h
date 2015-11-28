@@ -594,8 +594,8 @@ public:
     NAssign(Node* id, Node* exp):id(id), exp(exp) {}
     virtual void code()
     {
-        if(id->getType==1){
-            if(exp->getNodeType=="NString"){
+        if(id->getInt()==1){
+            if(exp->getNodeType()=="NString"){
                 exp->code();
             }else{
 
