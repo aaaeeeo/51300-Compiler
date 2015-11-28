@@ -163,10 +163,14 @@ public:
 			if(instructionList.size()==3){
 				instructionList.at(1)->code();
 				cout<<"\tjmp "<<"out"<<labelOut<<endl;
-			}
-			cout<<"\tno"<<labelNo<<":"<<endl;
-			instructionList.at(2)->code();
-			cout<<"\tout"<<labelOut<<":"<<endl;
+                cout<<"\tno"<<labelNo<<":"<<endl;
+                instructionList.at(2)->code();
+                cout<<"\tout"<<labelOut<<":"<<endl;
+			}else{
+                instructionList.at(1)->code();
+                cout<<"\tno"<<labelNo<<":"<<endl;
+            }
+			
 		}//T_SELECT
         else if(type==8){
 		    
@@ -422,7 +426,7 @@ public:
         {
             type= T_INT;
             int re;
-            if(operation==0)
+            if(operation==0)//T_PLUS
                 re=leftExp->getValue()+rightExp->getValue();
             if(operation==1)
                 re=leftExp->getValue()-rightExp->getValue();
