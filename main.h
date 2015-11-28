@@ -301,6 +301,7 @@ public:
             string temp="";
             temp+=itos(offset);
             temp+="(%ebp)"; 
+            return temp;
         }
     }
     virtual string getNodeType()
@@ -537,6 +538,7 @@ public:
         int num=0;
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
+            cout<<count<<": "<<(*it)->getNodeType()<<endl;
             count++;
             if((*it)->getNodeType()=="NString")
             {
@@ -556,7 +558,8 @@ public:
                 string src="$.s";
                 src+=itos(num);
                 cout<<"leal "<<8+snum*128<<"(%esp),%eax\n";
-                code_strncpy(src,"%eax");
+                string dst="%eax";
+                code_strncpy(src, dst);
                 snum++;
             }
         } 
