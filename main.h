@@ -178,8 +178,12 @@ public:
         else if(type==8){
 		    
 			printList();
+            //cout<<instructionList.at(0)->getNodeType()<<instructionList.at(0)->getInt()<<endl;
             if(instructionList.at(0)->getInt()==1)
             {
+                Node* n=instructionList.at(0);
+                cout<<"\tpushl $128\n";
+                cout<<"\tpushl "<<n->getRef()<<endl;
                 cout<<"\tmovl $.stracc,%eax\n";
             }
             cout<<"\tjmp ."<<cfun<<"_ret\n";
@@ -226,6 +230,11 @@ public:
     {
         return value;
     }
+    virtual string getRef()
+    {
+        string temp="$"+itos(value);
+        return temp;
+    }
 };
 
 //===========================================
@@ -250,8 +259,9 @@ public:
     {
         return "NString";
     }
-    virtual string getString(){
-        return this->value;
+    virtual string getString()
+    {
+        return value;
     }
 };
 
@@ -299,6 +309,7 @@ public:
     }
     virtual string getRef()
     {
+        //cout<<"offset"<<offset<<endl;
         if(offset==1 || offset==-1)
             return id;
         else
@@ -542,6 +553,7 @@ public:
 
 };
 
+#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==3)
 //===============================================
 //               Function Call
 //===============================================
@@ -550,6 +562,7 @@ class NFunctionCall : public NExpression
 public:
     Node* funcationName;
     vector<Node*> argumentList;
+    
 
     NFunctionCall(Node* name, vector<Node*> argumentList):
     funcationName(name),argumentList(argumentList) {}
@@ -566,56 +579,89 @@ public:
         {
             //cout<<count<<": "<<(*it)->getNodeType()<<endl;
             count++;
-            if((*it)->getNodeType()=="NString")
+            if( needcpy )
             {
                 scount++;
             }
         } 
-        cout<<"\tsubl $"<<scount*128<<", %esp\n";
-        for( auto it = argumentList.begin(); it != argumentList.end(); it++)
+        if(scount!=0)
         {
-            if(scount==0)
-                break;
+            cout<<"\tsubl $"<<scount*128<<", %esp\n";
 
-            if((*it)->getNodeType()=="NString")
+            for( auto it = argumentList.begin(); it != argumentList.end(); it++)
             {
-                int num=save_cstr((*it)->getString());
-                string src="$.s";
-                src+=itos(num);
-                cout<<"\tleal "<<8+snum*128<<"(%esp),%eax\n";
-                string dst="%eax";
-                
-                cout<<"\tpushl $128\n";
-                cout<<"\tpushl "<<src<<endl;
-                cout<<"\tpushl "<<dst<<endl;
-                cout<<"\tcall strncpy\n";
-                if(dst!="%eax")
-                    cout<<"\tmovl "<<dst<<", %eax\n";
-                cout<<"\tmovb $0,127(%eax)\n\taddl $12, %esp\n";
-
-                snum++;
-            }
-        } 
+                if(scount==0)
+                    break;
+    
+                if( needcpy )
+                {
+                    string src;
+                    if((*it)->getNodeType()=="NString")
+                    {
+                        int num=save_cstr((*it)->getString());
+                        src="$.s";
+                        src+=itos(num);
+                    }
+                    else if((*it)->getNodeType()=="NFunctionCall")
+                    {
+                        (*it)->code();
+                        src="$.stracc";
+                    }
+                    cout<<"\tleal "<<8+snum*128<<"(%esp),%eax\n";
+                    string dst="%eax";
+                    
+                    cout<<"\tpushl $128\n";
+                    cout<<"\tpushl "<<src<<endl;
+                    cout<<"\tpushl "<<dst<<endl;
+                    cout<<"\tcall strncpy\n";
+                    if(dst!="%eax")
+                        cout<<"\tmovl "<<dst<<", %eax\n";
+                    cout<<"\tmovb $0,127(%eax)\n\taddl $12, %esp\n";
+    
+                    snum++;
+                }
+            } 
+        }
         num=0;snum=0;
-		for( auto it = argumentList.begin(); it != argumentList.end(); it++)
+		for( auto it= argumentList.rbegin(); it!=argumentList.rend(); it++)
         {
-            num++;
-            if((*it)->getNodeType()!="NString")
+            if( !(needcpy) )
                 cout<<"\tpushl "<<(*it)->getRef()<<endl;
             else
             {
                 snum++;
                 cout<<"\tleal "<<4*num+(scount-snum)*128<<"(%esp),%eax\n";
+                cout<<"\tpush %eax\n";
             }
+            num++;
             
         } 
         cout<<"\tcall "<<funcationName->getString()<<endl;
+        variableType type = (variableType)funcationName->getInt();
+        if(type==3)
+        {
+            cout<<"\tpushl $128\n";
+            cout<<"\tpushl %eax\n";
+            cout<<"\tpushl $.stracc\n";
+            cout<<"\tcall strncpy\n";
+            cout<<"\tmovl $.stracc, %eax\n";
+            cout<<"\tmovb $0,127(%eax)\n\taddl $12, %esp\n";
+        }
 		cout<<"\taddl $"<<4*count+128*scount<<", %esp"<<endl;
     }
     virtual Node* getNode()
     {
         return funcationName;
     }
+    virtual int getInt()
+    {
+        return funcationName->getInt();
+    }
+    virtual string getNodeType()
+    {
+        return "NFunctionCall";
+    }
+
 };
 
 //================================================
