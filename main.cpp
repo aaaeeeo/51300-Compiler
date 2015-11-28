@@ -13,6 +13,7 @@ extern bool isStrncat = false;
 
 int save_cstr(string value);
 string itos(int i);
+string code_strncpy(string src, string dst);
 
 string cfun="!non!";
 
@@ -41,7 +42,9 @@ string itos(int i){ // 将int 转换成string
 string code_strncpy(string src, string dst)
 {
 	cout<<"pushl $128\n";
+	cout<<"cout src\n";
 	cout<<"pushl "<<src<<endl;
+	cout<<"cout dst\n";
 	cout<<"pushl "<<dst<<endl;
 	cout<<"call strncpy\n";
 	cout<<"movl "<<dst<<", %eax\nmovb $0,127(%eax)\naddl $12, %esp\n";
