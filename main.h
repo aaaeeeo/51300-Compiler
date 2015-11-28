@@ -22,7 +22,6 @@ extern bool isStrncat;
 extern string cfun;
 extern int save_cstr(string value);
 extern string itos(int i);
-extern void code_strncpy(string src, string dst);
 
 class Node
 {
@@ -538,28 +537,35 @@ public:
         int num=0;
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
-            cout<<count<<": "<<(*it)->getNodeType()<<endl;
+            //cout<<count<<": "<<(*it)->getNodeType()<<endl;
             count++;
             if((*it)->getNodeType()=="NString")
             {
                 scount++;
             }
         } 
+        cout<<"\tsubl $"<<scount*128<<", %esp\n";
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
             if(scount==0)
                 break;
-
-            cout<<"subl $"<<scount*128<<", %esp\n";
 
             if((*it)->getNodeType()=="NString")
             {
                 int num=save_cstr((*it)->getString());
                 string src="$.s";
                 src+=itos(num);
-                cout<<"leal "<<8+snum*128<<"(%esp),%eax\n";
+                cout<<"\tleal "<<8+snum*128<<"(%esp),%eax\n";
                 string dst="%eax";
-                code_strncpy(src, dst);
+                
+                cout<<"\tpushl $128\n";
+                cout<<"\tpushl "<<src<<endl;
+                cout<<"\tpushl "<<dst<<endl;
+                cout<<"\tcall strncpy\n";
+                if(dst!="%eax")
+                    cout<<"\tmovl "<<dst<<", %eax\n";
+                cout<<"\tmovb $0,127(%eax)\n\taddl $12, %esp\n";
+
                 snum++;
             }
         } 
@@ -572,7 +578,7 @@ public:
             else
             {
                 snum++;
-                cout<<"leal "<<4*num+(scount-snum)*128<<"(%esp),%eax\n";
+                cout<<"\tleal "<<4*num+(scount-snum)*128<<"(%esp),%eax\n";
             }
             
         } 
