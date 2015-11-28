@@ -56,7 +56,11 @@ else
 	  }
 
 \"[^"]*\"					{
-	string  str(yytext); 
+	string  str(yytext);
+	if (*str.begin() == '"')
+        str.erase(str.begin());
+    if (*(--str.end()) == '"')
+        str.erase(--str.end()); 
 	NString* n = new NString(str);
 	yylval.u_node=n;
 	return CONST_STRING;
