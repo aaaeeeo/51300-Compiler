@@ -9,7 +9,10 @@ ASM=out.s
 BIN=out
 LIB=COMPILER_EXAMPLE/lib/lib.o
 
-final: $(ASM)
+final: $(BIN)
+	@./$(BIN)
+
+$(BIN): $(ASM)
 	gcc -m32 -o $(BIN) $(ASM) $(LIB)
 
 $(ASM): $(INTERN) $(OBJECT)

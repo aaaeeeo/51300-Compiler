@@ -586,7 +586,6 @@ public:
             count++;
             if( needcpy )
             {
-                cerr<<"STR!!\n";
                 scount++;
             }
         } 
