@@ -280,7 +280,7 @@ public:
     {
         if(offset==1)
             cout<<"\tmovl "<<id<<", %eax\n";
-        else if(offset<=-1){
+        else if(type==T_STRING){
             cout<<"\tleal "<<this->getRef()<<", %eax"<<endl;
             cout<<"\tpushl %eax"<<endl;
         }
