@@ -500,14 +500,15 @@ public:
     {}
     virtual void code()
     {
-        if( (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString") ||
-            (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString") ||
-            (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt") ){
+        if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
+            (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
+            (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString")){
             if(operation==0){
                 isconst=true;
                 string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
-                cout<<"\tpushl $.s"<<num<<endl;               
+                cout<<"\tpushl $.s"<<num<<endl; 
+                isConst = true;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
             leftExp->code();
@@ -745,6 +746,7 @@ public:
         if(id->getInt()==1){
             cout<<"\tpushl $128"<<endl;
             exp->code();
+
             if(exp->getNodeType()!="NString")
             {
                 cout<<"\tpushl $128"<<endl;
