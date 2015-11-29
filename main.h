@@ -497,12 +497,21 @@ public:
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
-    {}
+    {
+        if(leftExp->getInt()==1 || rightExp->getInt()==1)
+            type=T_STRING;
+        if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
+            (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
+            (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString"))
+            isconst=true;
+    }
     virtual void code()
     {
         if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
             (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
             (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString")){
+            type=T_STRING;
+
             if(operation==0){
                 isconst=true;
                 string combine = leftExp->getString()+rightExp->getString();
@@ -510,6 +519,8 @@ public:
                 cout<<"\tpushl $.s"<<num<<endl;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
+            type=T_STRING;
+
             leftExp->code();
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strncpy"<<endl;
@@ -603,7 +614,7 @@ public:
 
 };
 
-#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==1)
+#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==1) || ((*it)->getNodeType()=="NBinaryOp" && (*it)->getInt()==1)
 //===============================================
 //               Function Call
 //===============================================
@@ -627,7 +638,7 @@ public:
         int num=0; //current parameter index 
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
-            cerr<<count<<": "<<(*it)->getNodeType()<<endl;
+            cerr<<count<<": "<<(*it)->getNodeType()<<(*it)->getInt()<<endl;
             count++;
             if( needcpy )
             {
@@ -648,20 +659,20 @@ public:
                     string src;
                     if((*it)->getNodeType()=="NString")
                     {
-                        int num=save_cstr((*it)->getString());
-                        src="$.s";
-                        src+=itos(num);
+                        cout<<"\tpushl $128\n";
+                        (*it)->code();
                     }
-                    else if((*it)->getNodeType()=="NFunctionCall")
+                    else if((*it)->getNodeType()=="NFunctionCall" || (*it)->getNodeType()=="NBinaryOp")
                     {
                         (*it)->code();
                         src="$.stracc";
+                        cout<<"\tpushl $128\n";
+                        cout<<"\tpushl "<<src<<endl;
                     }
-                    cout<<"\tleal "<<snum*128<<"(%esp),%eax\n";
+                    cout<<"\tleal "<<8+snum*128<<"(%esp),%eax\n";
                     string dst="%eax";
                     
-                    cout<<"\tpushl $128\n";
-                    cout<<"\tpushl "<<src<<endl;
+                    
                     cout<<"\tpushl "<<dst<<endl;
                     cout<<"\tcall strncpy\n";
                     if(dst!="%eax")
