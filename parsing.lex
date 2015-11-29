@@ -54,6 +54,12 @@ else
 	//printf("CONST_INT: %d\n", n->value);
 	return CONST_INT;
 	  }
+\'[^']\'					{
+	NInt* n = new NInt(yytext[1]);
+	yylval.u_node=n;
+	//printf("CONST_INT: %d\n", n->value);
+	return CONST_INT;
+}
 
 \"[^"]*\"					{
 	string  str(yytext);
