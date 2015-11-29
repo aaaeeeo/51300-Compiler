@@ -522,8 +522,9 @@ public:
                 int num = save_cstr(combine);
                 cout<<"\tpushl $.s"<<num<<endl;              
             }
-        }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
+        }else if(leftExp->getInt()==1 || rightExp->getInt()==1){//string variable and string const                                                       //2 string variables
             type=T_STRING;
+
 
             if(leftExp->getInt()==0)
             {
@@ -532,6 +533,7 @@ public:
             }
             else
                 leftExp->code();
+
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strncpy"<<endl;
             isStrncpy = true;
@@ -548,6 +550,7 @@ public:
             }
             else
                 rightExp->code();
+
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strcat"<<endl;
             isStrncat = true;
@@ -849,8 +852,6 @@ public:
         if(operation==5)
             cout<<"\tje ";  //not equal
 		
-		//labelIn++;
-		//cout<<"In"<<labelIn<<endl;
     }
 };
 
