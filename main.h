@@ -567,11 +567,11 @@ public:
             }
             if(operation==5)
             {
-                cout<<"\tsall %bl, %ea\n";
+                cout<<"\tsall %bl, %eax\n";
             }
             if(operation==6)
             {
-                cout<<"\tsarl %bl, %ea\n";
+                cout<<"\tsarl %bl, %eax\n";
             }
         }
 
@@ -670,7 +670,7 @@ public:
                     (*it)->code();
                     cout<<"\tpushl %eax\n";
                 }
-                else if((*it)->getNodeType()=="NIdentifier")
+                else if((*it)->getNodeType()=="NIdentifier" && (*it)->getInt()==1)
                 {
                     cout<<"\tleal "<<(*it)->getRef()<<", %eax\n";
                     cout<<"\tpushl %eax\n";
