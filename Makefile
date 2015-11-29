@@ -43,4 +43,4 @@ preprocessing.lex.yy.c: preprocessing.lex
 	$(LEX) -o preprocessing.lex.yy.c preprocessing.lex
 
 clean:
-	@rm -f $(OBJECT) $(INTERN) preprocessing *.o *.tab.* *.yy.*
+	@rm -f $(OBJECT) $(INTERN) $(ASM) $(BIN) preprocessing *.o *.tab.* *.yy.* 
