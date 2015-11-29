@@ -667,7 +667,8 @@ public:
         {
             if( !(needcpy) )
             {
-                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp")
+                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp" || 
+                    ((*it)->getNodeType()=="NFunctionCall"&& (*it)->getInt()==2))
                 {
                     (*it)->code();
                     cout<<"\tpushl %eax\n";
