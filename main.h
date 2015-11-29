@@ -504,7 +504,7 @@ public:
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strncpy"<<endl;
             isStrncpy = true;
-            cout<<"\tmov $0, 127(%eax)"<<endl;
+            cout<<"\tmovb $0, 127(%eax)"<<endl;
             if(isStrncpy){
                 cout<<"\taddl $12, %esp"<<endl;
             }
@@ -645,7 +645,7 @@ public:
                         (*it)->code();
                         src="$.stracc";
                     }
-                    cout<<"\tleal "<<8+snum*128<<"(%esp),%eax\n";
+                    cout<<"\tleal "<<snum*128<<"(%esp),%eax\n";
                     string dst="%eax";
                     
                     cout<<"\tpushl $128\n";
@@ -735,9 +735,9 @@ public:
 
             cout<<"\tleal "<<id->getRef()<<", %eax"<<endl;
             cout<<"\tpushl %eax"<<endl;
-            cout<<"\tcall strncyp"<<endl;
+            cout<<"\tcall strncpy"<<endl;
             isStrncpy = true;
-            cout<<"\tmov $0, 127(%eax)"<<endl;
+            cout<<"\tmovb $0, 127(%eax)"<<endl;
             if(isStrncpy){
                cout<<"\taddl $12, %esp"<<endl;
             }
