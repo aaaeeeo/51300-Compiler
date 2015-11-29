@@ -268,6 +268,12 @@ public:
         string temp="$"+itos(value);
         return temp;
     }
+    virtual string getString()
+    {
+        string temp="";
+        temp+=value;
+        return temp;
+    }
 };
 
 //===========================================
@@ -487,14 +493,18 @@ public:
     Node* leftExp;
     Node* rightExp;
     variableType type;
+    bool isconst=false;
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
     {}
     virtual void code()
     {
-        if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString"){
+        if( (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString") ||
+            (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString") ||
+            (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt") ){
             if(operation==0){
+                isconst=true;
                 string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
                 cout<<"\tpushl $.s"<<num<<endl;               
@@ -584,7 +594,7 @@ public:
     }
     virtual string getNodeType()
     {
-        return "NBinaryOp";
+        return (isconst==true ? "NString" : "NBinaryOp");
     }
     virtual int getInt()
     {
@@ -734,11 +744,9 @@ public:
     {
         if(id->getInt()==1){
             cout<<"\tpushl $128"<<endl;
-            if(exp->getNodeType()=="NString"){
-                exp->code();
-                
-            }else{
-                exp->code();
+            exp->code();
+            if(exp->getNodeType()!="NString")
+            {
                 cout<<"\tpushl $128"<<endl;
                 cout<<"\tpushl $.stracc"<<endl;
             }
