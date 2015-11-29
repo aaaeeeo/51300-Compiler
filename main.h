@@ -339,7 +339,7 @@ public:
     {}
     virtual void code()
     {
-        cout<<"_Variable: name: "<<id<<"type: "<<( type==0 ? "int" : "string" )<<endl;
+        //cout<<"_Variable: name: "<<id<<"type: "<<( type==0 ? "int" : "string" )<<endl;
     }
     virtual string getString()
     {

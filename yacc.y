@@ -151,9 +151,9 @@ void print_table( unordered_map<string, double>* tb)
 {
 	//cout<<"------------Symbol Table--------------"<<endl;
 	for ( auto it = tb->begin(); it != tb->end(); it++ )
-    {	cout << it->first << "\t" ;
+    {	cerr << it->first << "\t" ;
     	double type= it->second;
-    	cout<<type<<endl;
+    	cerr<<type<<endl;
     }
 }
 
@@ -298,9 +298,9 @@ declaration 	// Declaration Global
 | function_definition { 
 	$$ = $1; 
 
-	cout<<endl<<"-------Extern Symbol Table--------"<<endl;
+	cerr<<endl<<"-------Extern Symbol Table--------"<<endl;
 	print_table(symbolTable.at(0));
-	cout<<endl<<"-------Global Symbol Table--------"<<endl;
+	cerr<<endl<<"-------Global Symbol Table--------"<<endl;
 	print_table(symbolTable.at(1));
 	 }
 ;
@@ -515,7 +515,7 @@ block_start :
 block_end :  
 '}' // Empty hash table
 {
-	cout<<endl<<"-------Local Symbol Table--------"<<endl;
+	cerr<<endl<<"-------Local Symbol Table--------"<<endl;
 	print_table(symbolTable.back());
 }
 ;
@@ -691,7 +691,7 @@ int main()
 
 	if(yyparse()==0)
 	{
-		cout<<endl<<"-----------CODE-----------"<<endl;
+		cerr<<endl<<"-----------CODE-----------"<<endl;
 		root->code();
 
 		code_table_var(symbolTable.at(0));

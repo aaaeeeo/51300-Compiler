@@ -5,9 +5,15 @@ PP=cpp
 OBJECT=main
 INTERN=code
 SOURCE=test.c
+ASM=out.s
+BIN=out
+LIB=COMPILER_EXAMPLE/lib/lib.o
 
-final: $(INTERN) $(OBJECT)
-	@./$(OBJECT) < $(INTERN)
+final: $(ASM)
+	gcc -m32 -o $(BIN) $(ASM) $(LIB)
+
+$(ASM): $(INTERN) $(OBJECT)
+	@./$(OBJECT) < $(INTERN) > $(ASM)
 
 $(INTERN): preprocessing $(SOURCE)
 	$(PP) $(SOURCE) > $(INTERN)
