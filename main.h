@@ -671,7 +671,11 @@ public:
                     cout<<"\tpushl %eax\n";
                 }
                 else
-                    cout<<"\tpushl "<<(*it)->getRef()<<endl;
+                {
+
+                    cout<<"\tmovl "<<(*it)->getRef()<<", %eax\n";
+                    cout<<"\t pushl %eax\n";
+                }
             }
             else
             {
