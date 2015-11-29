@@ -17,6 +17,10 @@ extern int labelNo;
 extern int labelOut;
 extern int labelSkip;
 extern int labelLoop;
+extern int noMax;
+extern int outMax;
+extern int skipMax;
+extern int loopMax;
 extern bool isStrncpy;
 extern bool isStrncat;
 extern string cfun;
@@ -122,58 +126,87 @@ public:
 			printList();
 		}//T_EXPRESSION          
         else if(type==4){
-			labelLoop++;
+			labelLoop = loopMax;
 			cout<<"\tloop"<<labelLoop<<":"<<endl;
+            labelLoop++;
+            loopMax = labelLoop;
 			
 			instructionList.at(0)->code();
 			instructionList.at(1)->code();
 			
-			labelSkip++;
+			labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
+            labelSkip++;
+            skipMax = labelSkip;
+
+            labelLoop--;
 			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
-			
+			labelSkip--;
 			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_DOITERATION        
         else if(type==5){
-			labelLoop++;
+			labelLoop = loopMax;
 			cout<<"\tloop"<<labelLoop<<":"<<endl;
+            labelLoop++;
+            loopMax = labelLoop;
 			
 			instructionList.at(0)->code();
-			labelSkip++;
+			labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
+            labelSkip++;
+            skipMax = labelSkip;
 			
 			instructionList.at(1)->code();
+            labelLoop--;
 			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
-			
+			labelSkip--;
 			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_WHILEITERATION         
         else if(type==6){
             instructionList.at(0)->code();
-			labelLoop++;
+            labelLoop = loopMax;
 			cout<<"\tloop"<<labelLoop<<":"<<endl;
-			
+			labelLoop++;
+            loopMax = labelLoop;
+
 			instructionList.at(1)->code();
-			labelSkip++;
+            labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
+            labelSkip++;
+            skipMax = labelSkip;
 			
 			instructionList.at(3)->code();
-			instructionList.at(2)->code();			
+			instructionList.at(2)->code();
+            labelLoop--;			
 			cout<<"\tjmp "<<"loop"<<labelLoop<<endl;
-			
+			labelSkip--;
 			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_FORITERATION          
         else if(type==7){
 			instructionList.at(0)->code();
-			labelNo++;
+            labelNo = noMax;
 			cout<<"no"<<labelNo<<endl;
-			labelOut++;
+            labelNo++;
+            noMax = labelNo;
+
 			if(instructionList.size()==3){
 				instructionList.at(1)->code();
+
+                labelOut = outMax;
 				cout<<"\tjmp "<<"out"<<labelOut<<endl;
-			}
-			cout<<"\tno"<<labelNo<<":"<<endl;
-			instructionList.at(2)->code();
-			cout<<"\tout"<<labelOut<<":"<<endl;
+                labelOut++;
+                outMax = labelOut;
+
+                labelNo--;
+                cout<<"\tno"<<labelNo<<":"<<endl;
+                instructionList.at(2)->code();
+                labelOut--;
+                cout<<"\tout"<<labelOut<<":"<<endl;
+			}else{
+                instructionList.at(1)->code();
+                labelNo--;
+                cout<<"\tno"<<labelNo<<":"<<endl;
+            }		
 		}//T_SELECT
         else if(type==8){
 		    

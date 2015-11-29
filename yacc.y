@@ -677,7 +677,7 @@ IDENT
 
 int yyerror(const char* msg)
 {
-	cout<<"ERROR: line "<<yylineno<<": "<<msg<<endl;
+	cerr<<"ERROR: line "<<yylineno<<": "<<msg<<endl;
 }
 
 int main()
