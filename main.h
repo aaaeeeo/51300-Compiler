@@ -278,9 +278,10 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
+        //cerr<<id<<" "<<offset<<endl;
         if(offset==1)
             cout<<"\tmovl "<<id<<", %eax\n";
-        else if(offset<=-1){
+        else if(type==T_STRING){
             cout<<"\tleal "<<this->getRef()<<", %eax"<<endl;
             cout<<"\tpushl %eax"<<endl;
         }
@@ -437,6 +438,10 @@ public:
     {
         return childExp;
     }
+    virtual string getNodeType()
+    {
+        return "NUnaryOp";
+    }
 };
 
 //===========================================
@@ -577,10 +582,11 @@ public:
         int num=0;
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
-            //cout<<count<<": "<<(*it)->getNodeType()<<endl;
+            cerr<<count<<": "<<(*it)->getNodeType()<<endl;
             count++;
             if( needcpy )
             {
+                cerr<<"STR!!\n";
                 scount++;
             }
         } 
@@ -626,7 +632,15 @@ public:
 		for( auto it= argumentList.rbegin(); it!=argumentList.rend(); it++)
         {
             if( !(needcpy) )
-                cout<<"\tpushl "<<(*it)->getRef()<<endl;
+            {
+                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp")
+                {
+                    (*it)->code();
+                    cout<<"\tpushl %eax\n";
+                }
+                else
+                    cout<<"\tpushl "<<(*it)->getRef()<<endl;
+            }
             else
             {
                 snum++;
