@@ -593,7 +593,7 @@ public:
 
 };
 
-#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==3)
+#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==1)
 //===============================================
 //               Function Call
 //===============================================
@@ -667,7 +667,8 @@ public:
         {
             if( !(needcpy) )
             {
-                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp")
+                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp" ||
+                    ( (*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==0 ) )
                 {
                     (*it)->code();
                     cout<<"\tpushl %eax\n";
@@ -710,7 +711,7 @@ public:
     }
     virtual int getInt()
     {
-        return funcationName->getInt();
+        return funcationName->getInt()-2;
     }
     virtual string getNodeType()
     {
