@@ -670,11 +670,14 @@ public:
                     (*it)->code();
                     cout<<"\tpushl %eax\n";
                 }
+                else if((*it)->getNodeType()=="NIdentifier")
+                {
+                    cout<<"\tleal "<<(*it)->getRef()<<", %eax\n";
+                    cout<<"\tpushl %eax\n";
+                }
                 else
                 {
-
-                    cout<<"\tmovl "<<(*it)->getRef()<<", %eax\n";
-                    cout<<"\t pushl %eax\n";
+                    cout<<"\tpushl "<<(*it)->getRef()<<"\n";
                 }
             }
             else
