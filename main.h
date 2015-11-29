@@ -494,6 +494,7 @@ public:
     Node* rightExp;
     variableType type;
     bool isconst=false;
+    string combine;
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
@@ -503,7 +504,10 @@ public:
         if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
             (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
             (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString"))
+        {
             isconst=true;
+            combine = leftExp->getString()+rightExp->getString();
+        }
     }
     virtual void code()
     {
@@ -513,15 +517,21 @@ public:
             type=T_STRING;
 
             if(operation==0){
-                isconst=true;
-                string combine = leftExp->getString()+rightExp->getString();
+                //isconst=true;
+                //string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
                 cout<<"\tpushl $.s"<<num<<endl;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
             type=T_STRING;
 
-            leftExp->code();
+            if(leftExp->getInt()==0)
+            {
+                int num = save_cstr(leftExp->getString());
+                cout<<"\tpushl $.s"<<num<<endl;
+            }
+            else
+                leftExp->code();
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strncpy"<<endl;
             isStrncpy = true;
@@ -530,7 +540,14 @@ public:
                 cout<<"\taddl $12, %esp"<<endl;
             }
             isStrncpy = false;
-            rightExp->code();
+
+            if(rightExp->getInt()==0)
+            {
+                int num = save_cstr(rightExp->getString());
+                cout<<"\tpushl $.s"<<num<<endl;
+            }
+            else
+                rightExp->code();
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strcat"<<endl;
             isStrncat = true;
@@ -610,6 +627,10 @@ public:
     virtual int getInt()
     {
         return type;
+    }
+    virtual string getString()
+    {
+        return combine;
     }
 
 };
@@ -799,6 +820,14 @@ public:
     {}
     virtual void code()
     {	
+        if(operation==0)
+        {
+            if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")
+            {
+                if(leftExp->getString()==rightExp->getString())
+                    return ;
+            }
+        }
 		leftExp->code();
 		cout<<"\tmovl %eax, %esi"<<endl;
 		
