@@ -507,8 +507,7 @@ public:
                 isconst=true;
                 string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
-                cout<<"\tpushl $.s"<<num<<endl; 
-                isConst = true;              
+                cout<<"\tpushl $.s"<<num<<endl;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
             leftExp->code();
@@ -622,10 +621,10 @@ public:
     funcationName(name) {}
     virtual void code()
     {
-		int count=0;
-        int scount=0;
-        int snum=0;
-        int num=0;
+		int count=0; //number of all parameters
+        int scount=0;//number of string parameters
+        int snum=0; //current string parameter index
+        int num=0; //current parameter index 
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
             cerr<<count<<": "<<(*it)->getNodeType()<<endl;
