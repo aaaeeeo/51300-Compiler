@@ -487,17 +487,21 @@ public:
     Node* leftExp;
     Node* rightExp;
     variableType type;
+    bool isConst = false;
 
     NBinaryOp(binaryOP operation, Node* leftExp, Node* rightExp):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
     {}
     virtual void code()
     {
-        if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString"){
+        if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
+            (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
+            (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString")){
             if(operation==0){
                 string combine = leftExp->getString()+rightExp->getString();
                 int num = save_cstr(combine);
-                cout<<"\tpushl $.s"<<num<<endl;               
+                cout<<"\tpushl $.s"<<num<<endl; 
+                isConst = true;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){
             leftExp->code();
@@ -584,7 +588,7 @@ public:
     }
     virtual string getNodeType()
     {
-        return "NBinaryOp";
+        return (isConst ? "NString" : "NBinaryOp");
     }
     virtual int getInt()
     {
@@ -593,7 +597,7 @@ public:
 
 };
 
-#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==3)
+#define needcpy (*it)->getNodeType()=="NString" || ((*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==1)
 //===============================================
 //               Function Call
 //===============================================
@@ -667,8 +671,8 @@ public:
         {
             if( !(needcpy) )
             {
-                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp" || 
-                    ((*it)->getNodeType()=="NFunctionCall"&& (*it)->getInt()==2))
+                if((*it)->getNodeType()=="NBinaryOp" || (*it)->getNodeType()=="NUnaryOp" ||
+                    ( (*it)->getNodeType()=="NFunctionCall" && (*it)->getInt()==0 ) )
                 {
                     (*it)->code();
                     cout<<"\tpushl %eax\n";
@@ -711,7 +715,7 @@ public:
     }
     virtual int getInt()
     {
-        return funcationName->getInt();
+        return funcationName->getInt()-2;
     }
     virtual string getNodeType()
     {
@@ -734,11 +738,11 @@ public:
     {
         if(id->getInt()==1){
             cout<<"\tpushl $128"<<endl;
+            exp->code();
             if(exp->getNodeType()=="NString"){
-                exp->code();
+                ;
                 
             }else{
-                exp->code();
                 cout<<"\tpushl $128"<<endl;
                 cout<<"\tpushl $.stracc"<<endl;
             }
