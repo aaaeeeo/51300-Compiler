@@ -673,8 +673,8 @@ public:
                 else
                 {
 
-                    cout<<"\tmovl "<<(*it)->getRef()<<", %eax\n";
-                    cout<<"\t pushl %eax\n";
+                    cout<<"\tleal "<<(*it)->getRef()<<", %eax\n";
+                    cout<<"\tpushl %eax\n";
                 }
             }
             else
