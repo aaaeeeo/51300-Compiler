@@ -670,7 +670,7 @@ public:
         int num=0; //current parameter index 
         for( auto it = argumentList.begin(); it != argumentList.end(); it++)
         {
-            cerr<<count<<": "<<(*it)->getNodeType()<<(*it)->getInt()<<endl;
+            //cerr<<count<<": "<<(*it)->getNodeType()<<(*it)->getInt()<<endl;
             count++;
             if( needcpy )
             {
@@ -835,7 +835,7 @@ public:
         {
             if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")
             {
-                cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
+                //cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
                 if(leftExp->getString()!=rightExp->getString())
                     return -1;
             }
@@ -844,7 +844,7 @@ public:
         {
             if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")
             {
-                cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
+                //cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
                 if(leftExp->getString()==rightExp->getString())
                     return -1;
             }
