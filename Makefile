@@ -1,6 +1,6 @@
 LEX=flex
 YACC=bison
-CC=g++
+CC=g++ -w
 PP=cpp
 OBJECT=main
 INTERN=code
@@ -18,8 +18,11 @@ $(BIN): $(ASM)
 $(ASM): $(INTERN) $(OBJECT)
 	@./$(OBJECT) < $(INTERN) > $(ASM)
 
-$(INTERN): preprocessing $(SOURCE)
+$(INTERN): preprocessing $(SOURCE) cleanb
 	$(PP) $(SOURCE) > $(INTERN)
+
+cleanb: 
+	@rm -f $(INTERN) $(ASM) $(BIN)
 
 $(OBJECT): lex.yy.o  yacc.tab.o
 	$(CC) lex.yy.o yacc.tab.o main.o -o $(OBJECT)

@@ -18,8 +18,10 @@ int parsing(char* name);
 
 %%
 
+"//"[^\n]*	;
+
 ^\#[^\n]*\n 	{
-	
+	yylineno--;
 }
 
 IF|if		return IF;

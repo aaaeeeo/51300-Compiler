@@ -25,6 +25,7 @@ unordered_map<string, double>* temp_tb;
 Node* root;
 int coffset=0;
 double poffset=0.5;
+bool err=false;
 
 
 double check_str(string id)
@@ -176,6 +177,7 @@ void code_table_var( unordered_map<string, double>* tb)
 
 void check_type( Node* a, Node *b)
 {
+	/*
 	while( dynamic_cast <NIdentifier*> (a) == NULL && 
 		dynamic_cast <NInt*> (a) == NULL && 
 		dynamic_cast <NString*> (a) == NULL)
@@ -184,6 +186,7 @@ void check_type( Node* a, Node *b)
 		dynamic_cast <NInt*> (b) == NULL && 
 		dynamic_cast <NString*> (b) == NULL)
 		b=b->getNode();
+	*/
 	if(a->getInt() != b->getInt())
 	{
 		string str="Type dismatch with " ;
@@ -298,10 +301,10 @@ declaration 	// Declaration Global
 | function_definition { 
 	$$ = $1; 
 
-	cerr<<endl<<"-------Extern Symbol Table--------"<<endl;
-	print_table(symbolTable.at(0));
-	cerr<<endl<<"-------Global Symbol Table--------"<<endl;
-	print_table(symbolTable.at(1));
+	//cerr<<endl<<"-------Extern Symbol Table--------"<<endl;
+	//print_table(symbolTable.at(0));
+	//cerr<<endl<<"-------Global Symbol Table--------"<<endl;
+	//print_table(symbolTable.at(1));
 	 }
 ;
 
@@ -427,7 +430,7 @@ type IDENT   { $$ = new _Variable( variableType($1), $2); }// Type declaration
 ;
 
 instruction :  
-';'  
+';' {}  
 | compound_instruction {$$=$1;}
 | expression_instruction  {$$=$1;}
 | iteration_instruction  {$$=$1;}
@@ -436,7 +439,7 @@ instruction :
 ;
 
 instruction1 :  
-';'  
+';' {}
 | compound_instruction {$$=$1;}
 | expression_instruction  {$$=$1;}
 | iteration_instruction1  {$$=$1;}
@@ -455,7 +458,7 @@ IDENT ASSIGN expression  {
 
 	check_ID($1);
 
-	//check_type($1, $3);
+	check_type($1, $3);
 }
 ;
 
@@ -515,8 +518,8 @@ block_start :
 block_end :  
 '}' // Empty hash table
 {
-	cerr<<endl<<"-------Local Symbol Table--------"<<endl;
-	print_table(symbolTable.back());
+	//cerr<<endl<<"-------Local Symbol Table--------"<<endl;
+	//print_table(symbolTable.back());
 }
 ;
 
@@ -620,7 +623,7 @@ expression_additive {
 
 expression_additive :  
 expression_multiplicative { $$=$1;}
-| expression_additive PLUS expression_multiplicative { $$ = new NBinaryOp(T_PLUS, $1, $3); check_type($1,$3);}
+| expression_additive PLUS expression_multiplicative { $$ = new NBinaryOp(T_PLUS, $1, $3); }
 | expression_additive MINUS expression_multiplicative { $$ = new NBinaryOp(T_MINUS, $1, $3); check_type($1,$3);}
 ;
 
@@ -677,29 +680,38 @@ IDENT
 
 int yyerror(const char* msg)
 {
-	cerr<<"ERROR: line "<<yylineno<<": "<<msg<<endl;
+	fprintf(stderr,"\033[31m\033[47mERROR:\033[0m \033[31mline %d: %s\033[0m\n",yylineno,msg);
+	//cerr<<"ERROR: line "<<yylineno<<": "<<msg<<endl;
+	err=true;
 }
 
 int main()
 {
+	fprintf(stderr,"\033[2J\033[35m\n------------------------------COMPILER------------------------------\n  \
+		   Author: Zuoming Li, Xueyin Wang\n\n\033[0m");
+	fprintf(stderr, "\033[34mParsing...\033[0m\n");
 	unordered_map<string, double>* table_glb = new unordered_map<string, double>;
 	unordered_map<string, double>* table_ertern = new unordered_map<string, double>;
 	init_table(table_glb);
 	init_table(table_ertern);
 	symbolTable.push_back(table_ertern);
 	symbolTable.push_back(table_glb);
-
+ 
 	if(yyparse()==0)
 	{
-		cerr<<endl<<"-----------CODE-----------"<<endl;
-		root->code();
+		fprintf(stderr, "\n\033[34mGenerating code...\033[0m\n");
 
+		root->code();
 		code_table_var(symbolTable.at(0));
 		code_table_var(symbolTable.at(1));
 		cout<<"\n\t.comm .stracc,256,4\n\n";
 		cout<<section;
 
-}
-
+		if(!err)
+			fprintf(stderr, "\033[32mCode generated without error.\033[0m\n");
+		else
+			fprintf(stderr, "\033[31mCode generated with error.\033[0m\n");
+	}
+	fprintf(stderr,"\033[35m\n--------------------------------------------------------------------\n\033[0m");
 
 }
