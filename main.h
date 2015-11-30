@@ -37,6 +37,11 @@ public:
     {
         cout<<"Node\n";
     }
+
+    virtual int code_opt()
+    {
+        return 0;
+    }
 	
     virtual string getString()
     {
@@ -131,7 +136,7 @@ public:
             labelLoop++;
             loopMax = labelLoop;
 			
-			instructionList.at(0)->code();
+			instructionList.at(0)->code_opt();
 			instructionList.at(1)->code();
 			
 			labelSkip = skipMax;
@@ -150,7 +155,8 @@ public:
             labelLoop++;
             loopMax = labelLoop;
 			
-			instructionList.at(0)->code();
+			if(instructionList.at(0)->code_opt()==-1)
+                return ;
 			labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
             labelSkip++;
@@ -169,7 +175,8 @@ public:
 			labelLoop++;
             loopMax = labelLoop;
 
-			instructionList.at(1)->code();
+			if(instructionList.at(1)->code_opt()==-1)
+                return ;
             labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
             labelSkip++;
@@ -183,7 +190,8 @@ public:
 			cout<<"\tskip"<<labelSkip<<":"<<endl;
 		}//T_FORITERATION          
         else if(type==7){
-			instructionList.at(0)->code();
+			if(instructionList.at(0)->code_opt()==-1)
+                return ;
             labelNo = noMax;
 			cout<<"no"<<labelNo<<endl;
             labelNo++;
@@ -821,14 +829,24 @@ public:
     NCondition( comparisonOP operation, Node* leftExp, Node* rightExp ):
     operation(operation), leftExp(leftExp), rightExp(rightExp)
     {}
-    virtual void code()
+    virtual int code_opt()
     {	
         if(operation==0)
         {
             if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")
             {
+                cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
+                if(leftExp->getString()!=rightExp->getString())
+                    return -1;
+            }
+        }
+        if(operation==5)
+        {
+            if(leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")
+            {
+                cerr<<leftExp->getString()<<" vs "<<rightExp->getString()<<endl;
                 if(leftExp->getString()==rightExp->getString())
-                    return ;
+                    return -1;
             }
         }
 		leftExp->code();
@@ -851,6 +869,8 @@ public:
             cout<<"\tjl ";  //greater or equal
         if(operation==5)
             cout<<"\tje ";  //not equal
+
+        return 0;
 		
     }
 };
