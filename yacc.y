@@ -187,6 +187,7 @@ void check_type( Node* a, Node *b)
 		dynamic_cast <NString*> (b) == NULL)
 		b=b->getNode();
 	*/
+	//cerr<<a->getNodeType()<<a->getInt()<<"   "<<b->getNodeType()<<b->getInt()<<endl;
 	if(a->getInt() != b->getInt())
 	{
 		string str="Type dismatch with " ;

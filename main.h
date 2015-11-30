@@ -49,7 +49,7 @@ public:
 	
     virtual string getString()
     {
-        return "";
+        return "default";
     }
     virtual int getInt()
     {
@@ -551,7 +551,7 @@ public:
     binaryOP operation;
     Node* leftExp;
     Node* rightExp;
-    variableType type;
+    variableType type=T_INT;
     bool isconst=false;
     string combine;
 
@@ -560,6 +560,8 @@ public:
     {
         if(leftExp->getInt()==1 || rightExp->getInt()==1)
             type=T_STRING;
+        else
+            type=T_INT;
         if((leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NString")||
             (leftExp->getNodeType()=="NString" && rightExp->getNodeType()=="NInt")||
             (leftExp->getNodeType()=="NInt" && rightExp->getNodeType()=="NString"))
