@@ -53,7 +53,7 @@ public:
     }
     virtual int getInt()
     {
-        return -1;
+        return 0;
     }
     virtual vector<Node*> getList()
     {}
@@ -512,10 +512,13 @@ class NUnaryOp : public NExpression
 public:
     unaryOP operation;
     Node* childExp;
+    variableType type;
 
     NUnaryOp(unaryOP operation, Node* childExp):
     operation(operation), childExp(childExp)
-    {}
+    {
+        type=T_INT;
+    }
     virtual void code()
     {
         childExp->code();
@@ -532,6 +535,10 @@ public:
     virtual bool isBOp()
     {
         return false;
+    }
+    virtual int getInt()
+    {
+        return type;
     }
 };
 
