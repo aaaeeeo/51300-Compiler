@@ -38,6 +38,10 @@ public:
         cout<<"Node\n";
     }
 
+    virtual void code2(){
+
+    }
+
     virtual int code_opt()
     {
         return 0;
@@ -76,6 +80,10 @@ public:
     virtual string getRef()
     {
         return "";
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
 
 };
@@ -136,8 +144,8 @@ public:
             labelLoop++;
             loopMax = labelLoop;
 			
-			instructionList.at(0)->code_opt();
-			instructionList.at(1)->code();
+			instructionList.at(0)->code();
+			instructionList.at(1)->code_opt();
 			
 			labelSkip = skipMax;
 			cout<<"skip"<<labelSkip<<endl;
@@ -244,6 +252,10 @@ public:
     {
         return offset;
     }
+    virtual bool isBOp()
+    {
+        return false;
+    }
 };
 
 //===========================================
@@ -262,6 +274,10 @@ public:
     virtual int getInt()
     {
         return 0;
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
     virtual string getNodeType()
     {
@@ -298,9 +314,18 @@ public:
         int num = save_cstr(this->value);
         cout<<"\tpushl $.s"<<num<<endl;
     }
+    virtual void code2(){
+        int num = save_cstr(this->value);
+        cout<<"\tpushl $128"<<endl;
+        cout<<"\tpushl $.s"<<num<<endl;
+    }
     virtual int getInt()
     {
         return 1;
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
     virtual string getNodeType()
     {
@@ -325,7 +350,6 @@ public:
     NIdentifier(string id): id(id) {}
     virtual void code()
     {
-        //cerr<<id<<" "<<offset<<endl;
         if(offset==1)
             cout<<"\tmovl "<<id<<", %eax\n";
         else if(type==T_STRING){
@@ -346,6 +370,10 @@ public:
     virtual void setInt(int t)
     {
         type=(variableType)t;
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
     virtual void setOffset(int o)
     {
@@ -397,6 +425,10 @@ public:
     {
         return type;
     }
+    virtual bool isBOp()
+    {
+        return false;
+    }
 
 };
 
@@ -428,6 +460,10 @@ public:
     {
     	return type;
     }
+    virtual bool isBOp()
+    {
+        return false;
+    }
 
 };
 
@@ -453,6 +489,10 @@ public:
     virtual int getInt()
     {
     	return isfun;
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
     virtual string getString()
     {
@@ -488,6 +528,10 @@ public:
     virtual string getNodeType()
     {
         return "NUnaryOp";
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
 };
 
@@ -527,37 +571,51 @@ public:
             if(operation==0){
                 //isconst=true;
                 //string combine = leftExp->getString()+rightExp->getString();
+                cout<<"\tpushl $128"<<endl;
                 int num = save_cstr(combine);
                 cout<<"\tpushl $.s"<<num<<endl;              
             }
         }else if(leftExp->getInt()==1 || rightExp->getInt()==1){//string variable and string const                                                       //2 string variables
             type=T_STRING;
-
-
             if(leftExp->getInt()==0)
             {
                 int num = save_cstr(leftExp->getString());
                 cout<<"\tpushl $.s"<<num<<endl;
+                cout<<"\tpush $.stracc"<<endl;
+                cout<<"\tcall strncpy"<<endl;
+                isStrncpy = true;
+                cout<<"\tmovb $0, 127(%eax)"<<endl;
+                if(isStrncpy){
+                    cout<<"\taddl $12, %esp"<<endl;
+                }
+                isStrncpy = false;
             }
-            else
+            else if(leftExp->isBOp()){
                 leftExp->code();
-
-            cout<<"\tpush $.stracc"<<endl;
-            cout<<"\tcall strncpy"<<endl;
-            isStrncpy = true;
-            cout<<"\tmovb $0, 127(%eax)"<<endl;
-            if(isStrncpy){
-                cout<<"\taddl $12, %esp"<<endl;
+            }else{
+                cout<<"\tpushl $128"<<endl;
+                leftExp->code();
+                cout<<"\tpush $.stracc"<<endl;
+                cout<<"\tcall strncpy"<<endl;
+                isStrncpy = true;
+                cout<<"\tmovb $0, 127(%eax)"<<endl;
+                if(isStrncpy){
+                    cout<<"\taddl $12, %esp"<<endl;
+                }
+                isStrncpy = false;
             }
-            isStrncpy = false;
 
+            
             if(rightExp->getInt()==0)
             {
                 int num = save_cstr(rightExp->getString());
                 cout<<"\tpushl $.s"<<num<<endl;
             }
-            else
+            else if(rightExp->isBOp()){
                 rightExp->code();
+            }else{
+                rightExp->code();
+            }
 
             cout<<"\tpush $.stracc"<<endl;
             cout<<"\tcall strcat"<<endl;
@@ -627,6 +685,9 @@ public:
         }
 
     }
+    virtual void code2(){
+        this->code();
+    }
     virtual Node* getNode()
     {
         return leftExp;
@@ -634,6 +695,10 @@ public:
     virtual string getNodeType()
     {
         return (isconst==true ? "NString" : "NBinaryOp");
+    }
+    virtual bool isBOp()
+    {
+        return true;
     }
     virtual int getInt()
     {
@@ -766,6 +831,10 @@ public:
     {
         return funcationName->getInt()-2;
     }
+    virtual bool isBOp()
+    {
+        return false;
+    }
     virtual string getNodeType()
     {
         return "NFunctionCall";
@@ -786,8 +855,7 @@ public:
     virtual void code()
     {
         if(id->getInt()==1){
-            cout<<"\tpushl $128"<<endl;
-            exp->code();
+            exp->code2();
 
             if(exp->getNodeType()!="NString")
             {
@@ -813,6 +881,10 @@ public:
             else
                 cout<<"\tmovl %eax, "<<offset<<"(%ebp)\n";
         }
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
 };
 
@@ -872,6 +944,10 @@ public:
 
         return 0;
 		
+    }
+    virtual bool isBOp()
+    {
+        return false;
     }
 };
 
